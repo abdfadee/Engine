@@ -72,7 +72,7 @@ int main() {
 	l4->translate(vec3(2, -2, 1));
 	space->add(l4);
 	
-	
+	*/
 	RectAreaLight* l5 = new RectAreaLight(
 		vec3(1.0f),
 		15.0f,
@@ -96,9 +96,9 @@ int main() {
 	l6->translate(vec3(-4, 0, 0));
 	space->add(l6);
 	
-	*/
+	
 
-
+	/*
 	SpotLight* l7 = new SpotLight(
 		vec3(1.0f),
 		15.0f,
@@ -109,7 +109,7 @@ int main() {
 	);
 	l7->translate(vec3(4, 0, 0));
 	space->add(l7);
-
+	*/
 	
 
 
