@@ -74,17 +74,19 @@ void main() {
     vec4 clip = inverseProjView * vec4(pos * 2.0 - 1.0 , 1.0);
     pos = clip.xyz / clip.w ;
     
-    /*
+    
     // Light Distance Check
     vec3 v = pos - light.position;
     float t = dot(v, light.direction);
     if (t < 0.0f || t > light.distance)
         discard;
-    float d2 = dot(v, v);
-    float cosAlpha2 = (t * t) / d2;
-    if (cosAlpha2 < light.cosTheta2)
-        discard;
-    */
+    else {
+        float d2 = dot(v, v);
+        float cosAlpha2 = (t * t) / d2;
+        if (cosAlpha2 < light.cosTheta2)
+            discard;
+    }
+    
     
     vec3 lightDir = light.position-pos;
     float distance = length(lightDir);
@@ -139,9 +141,14 @@ void main() {
 
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
-    vec3 color = ambient + Lo;
+    //vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
+    
+    // spotlight (soft edges)
+    float theta = dot(lightDir, normalize(light.direction)); 
+    float epsilon = (light.innerCutoff - light.outerCutoff);
+    float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
+    vec3 color = intensity * Lo;
     
     FragColor = vec4(color,1.0);
-    FragColor = vec4(1.0);
+    //FragColor = vec4(1.0);
 }

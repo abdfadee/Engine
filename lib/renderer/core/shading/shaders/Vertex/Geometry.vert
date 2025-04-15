@@ -11,7 +11,7 @@ layout(std140) uniform CameraBuffer {
 };
 uniform mat4 model;
 uniform mat3 normalMatrix;
-uniform float uvMultiplier = 2.0;
+uniform float uvMultiplier = 5.0;
 
 
 out FS_IN {

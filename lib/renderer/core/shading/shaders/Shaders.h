@@ -31,6 +31,9 @@ public:
     static void bindBuffers() {
         Geometry->bindBlock("CameraBuffer", 0);
         PointLight->bindBlock("CameraBuffer", 0);
+        RectAreaLight->bindBlock("CameraBuffer", 0);
+        SpotLight->bindBlock("CameraBuffer", 0);
+        AmbientLight->bindBlock("CameraBuffer", 0);
     }
 
 

@@ -10,7 +10,6 @@ public:
 	vec3 color;
 	float intensity;
 
-
 	Light(vec3 color, float intensity , Geometry* geometry) :
 		color(color),
 		intensity(intensity), 

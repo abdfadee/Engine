@@ -71,7 +71,7 @@ public:
 
 
 		// Light Pass
-		//glDisable(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);

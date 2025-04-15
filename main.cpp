@@ -32,7 +32,7 @@ int main() {
 	Object3D* space = new Object3D{};
 
 	Mesh* b = new Mesh{
-		new SpheroidGeometry{1.5,1.5,1.5},
+		new BoxGeometry{4,4,4},
 		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
 		new Material{albedo,roughness,nullptr,normal,displacment,0.2f}
 	};
@@ -72,7 +72,7 @@ int main() {
 	l4->translate(vec3(2, -2, 1));
 	space->add(l4);
 	
-	*/
+	
 	RectAreaLight* l5 = new RectAreaLight(
 		vec3(1.0f),
 		15.0f,
@@ -95,21 +95,21 @@ int main() {
 	);
 	l6->translate(vec3(-4, 0, 0));
 	space->add(l6);
-	
+	*/
 	
 
-	/*
+	
 	SpotLight* l7 = new SpotLight(
 		vec3(1.0f),
 		15.0f,
-		vec3(-1, 0, 0),
-		radians(30.0f),
+		vec3(0, 0, -1),
 		radians(45.0f),
-		5.0f
+		radians(60.0f),
+		4.0f
 	);
-	l7->translate(vec3(4, 0, 0));
+	l7->translate(vec3(0, 0, 3));
 	space->add(l7);
-	*/
+	
 	
 
 
@@ -121,7 +121,7 @@ int main() {
 
 	auto animationLoop = [&]() {
 		//space->rotate(vec3(0, radians(0.1f), 0));
-		//l->rotate(vec3(0, radians(0.1f), 0));
+		//l7->rotate(vec3(0, radians(0.1f), 0));
 		//space->translate(vec3(0.02,0,0));
 		//space->rotate(vec3(0, 0.1,0));
 		//b->rotate(vec3(0, radians(0.1f), 0));
