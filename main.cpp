@@ -23,30 +23,30 @@ int main() {
 
 	Texture* t = new Texture{"assets/2D/brickwall.jpg"};
 
-	Texture* albedo = new Texture{"assets/PBR/PavingStones/PavingStones138_2K-JPG_Color.jpg" };
-	Texture* normal = new Texture{ "assets/PBR/PavingStones/PavingStones138_2K-JPG_NormalGL.jpg" };
-	Texture* displacment = new Texture{ "assets/PBR/PavingStones/PavingStones138_2K-JPG_Displacement.jpg"};
-	Texture* roughness = new Texture{ "assets/PBR/PavingStones/PavingStones138_2K-JPG_Roughness.jpg" };
+	Texture* albedo = new Texture{"assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" };
+	Texture* normal = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_NormalGL.jpg" };
+	Texture* displacment = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Displacement.jpg"};
+	Texture* roughness = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg" };
 	Texture* metallic = new Texture{ "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg" };
 
 	Object3D* space = new Object3D{};
 
 	Mesh* b = new Mesh{
-		new BoxGeometry{4,4,4},
+		new BoxGeometry{12,12,4},
 		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
 		new Material{albedo,roughness,nullptr,normal,displacment,0.2f}
 	};
+	b->translate(vec3(0,0,-3));
 	space->add(b);
 
-
-	/*
+	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
 		15.0f,
 		15.0f
 	);
 	l1->translate(vec3(2,2,1));
-	space->add(l1);
+	//space->add(l1);
 
 	PointLight* l2 = new PointLight(
 		vec3(1.0f),
@@ -54,7 +54,7 @@ int main() {
 		10.0f
 	);
 	l2->translate(vec3(-2, 2, 1));
-	space->add(l2);
+	//space->add(l2);
 
 	PointLight* l3 = new PointLight(
 		vec3(1.0f),
@@ -62,7 +62,7 @@ int main() {
 		10.0f
 	);
 	l3->translate(vec3(-2, -2, 1));
-	space->add(l3);
+	//space->add(l3);
 	
 	PointLight* l4 = new PointLight(
 		vec3(1.0f),
@@ -70,7 +70,7 @@ int main() {
 		10.0f
 	);
 	l4->translate(vec3(2, -2, 1));
-	space->add(l4);
+	//space->add(l4);
 	
 	
 	RectAreaLight* l5 = new RectAreaLight(
@@ -82,7 +82,7 @@ int main() {
 		4
 	);
 	l5->translate(vec3(4, 0, 0));
-	space->add(l5);
+	//space->add(l5);
 	
 
 	RectAreaLight* l6 = new RectAreaLight(
@@ -94,8 +94,8 @@ int main() {
 		4
 	);
 	l6->translate(vec3(-4, 0, 0));
-	space->add(l6);
-	*/
+	//space->add(l6);
+	
 	
 
 	
@@ -119,7 +119,7 @@ int main() {
 	//space->add(camera);
 
 
-	auto animationLoop = [&]() {
+	auto animationLoop = [&](float deltaTime) {
 		//space->rotate(vec3(0, radians(0.1f), 0));
 		//l7->rotate(vec3(0, radians(0.1f), 0));
 		//space->translate(vec3(0.02,0,0));

@@ -88,7 +88,7 @@ public:
 	}
 
 
-	void setAnimationLoop(std::function<void()> animationLoop) {
+	void setAnimationLoop(std::function<void(float)> animationLoop) {
 		lastFrameTime = glfwGetTime();
 
 		while (!glfwWindowShouldClose(Renderer::window)) {
@@ -98,7 +98,7 @@ public:
 
 			Controls::processInput(deltaTime);
 
-			animationLoop();
+			animationLoop(deltaTime);
 
 			glfwSwapBuffers(window);
 			glfwPollEvents();

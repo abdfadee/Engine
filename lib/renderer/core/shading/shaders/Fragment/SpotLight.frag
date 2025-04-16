@@ -78,12 +78,12 @@ void main() {
     // Light Distance Check
     vec3 v = pos - light.position;
     float t = dot(v, light.direction);
-    if (t < 0.0f || t > light.distance)
+    if (t < 0.0f || t > light.distance + 0.1)
         discard;
     else {
         float d2 = dot(v, v);
         float cosAlpha2 = (t * t) / d2;
-        if (cosAlpha2 < light.cosTheta2)
+        if (cosAlpha2 < light.cosTheta2 - 0.1)
             discard;
     }
     
@@ -149,6 +149,6 @@ void main() {
     float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
     vec3 color = intensity * Lo;
     
-    FragColor = vec4(color,1.0);
+    FragColor = vec4(intensity);
     //FragColor = vec4(1.0);
 }

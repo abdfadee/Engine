@@ -42,6 +42,7 @@ public:
 
 		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
 		Renderer::lighting.spotLights.push_back(this);
+		
 		Renderer::lighting.ambientLights.push_back(ambientLight);
 		ambientLight->worldMatrix = originalMatrix;
 	}
@@ -63,12 +64,10 @@ public:
 		else {
 			float d2 = glm::dot(v, v);
 			float cosAlpha2 = (t * t) / d2;
-			if (cosAlpha2 >= cosTheta2 - 0.1) {
+			if (cosAlpha2 >= cosTheta2 - 0.1)
 				glCullFace(GL_FRONT);
-			}
-			else {
+			else
 				glCullFace(GL_BACK);
-			}
 		}
 		
 

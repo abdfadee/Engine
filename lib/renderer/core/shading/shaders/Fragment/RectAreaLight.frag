@@ -77,7 +77,7 @@ void main() {
     vec3 d = pos - light.center;
     for (int i = 0; i < 3; ++i) {
 	float dist = dot(d, light.axes[i]);
-	if (abs(dist) > light.halfSizes[i])
+	if (abs(dist) > light.halfSizes[i] + 0.1)
         discard;
     }
     
