@@ -73,7 +73,7 @@ public:
 	}
 
 
-	void updateMatrices() {
+	mat4 getViewProjectionMatrix() {
 		worldMatrix = getWorldMatrix();
 
 		mat3 directionMatrix = transpose(inverse(mat3(worldMatrix)));
@@ -84,8 +84,7 @@ public:
 
 		view = glm::lookAt(position, position + cameraFront, cameraUp);
 
-		CameraBuffer buffer{ view,projection };
-		cameraBuffer.upload(0, sizeof(buffer), &buffer);
+		return projection * view;
 	}
 
 

@@ -11,15 +11,12 @@
 class RectAreaLight : public Light {
 	float width , height , distance , halfSizes[3];
 	vec3 rotation , position;
-	PointLight* ambientLight;
 
 public:
 	RectAreaLight(vec3 color, float intensity , vec3 direction , float width , float height , float distance) :
 		width(width), height(height), distance(distance),
-		Light(color, intensity , new BoxGeometry(width,height,distance) ),
-		ambientLight(new PointLight(color,intensity,glm::max(distance,glm::max(width, height)) * 2)) {
+		Light(color, intensity , new BoxGeometry(width,height,distance) ) {
 		halfSizes[0] = width / 2; halfSizes[1] = height / 2; halfSizes[2] = distance / 2;
-
 		direction = normalize(direction);
 		float yaw = glm::pi<float>() + std::atan2(direction.x, direction.z);   // around Y
 		float pitch = -std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
@@ -38,8 +35,6 @@ public:
 
 		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
 		Renderer::lighting.rectAreaLights.push_back(this);
-		Renderer::lighting.ambientLights.push_back(ambientLight);
-		ambientLight->worldMatrix = originalMatrix;
 	}
 
 

@@ -27,7 +27,7 @@ public:
 		shader->setFloat("light.radius", radius);
 		
 		float dist = length(position - viewPos);
-		if (dist <= radius + 0.1)
+		if (dist <= radius + 00.1)
 			glCullFace(GL_FRONT);	
 		else
 			glCullFace(GL_BACK);

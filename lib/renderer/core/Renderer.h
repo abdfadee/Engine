@@ -30,12 +30,13 @@ public:
 public:
 	Renderer (GLFWwindow* window , GLuint width , GLuint height) : 
 		width(width), height(height), window(window) {
-		Shaders::prepare();
-		gBuffer = new FrameBuffer(width, height, 0, {
+		Shaders::compile();
+		gBuffer = new FrameBuffer(width, height,GL_DEPTH_COMPONENT24, {
+			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Position Buffer
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Normal Buffer 
 			{GL_RGB8,GL_NEAREST,GL_CLAMP_TO_EDGE},		// Color Buffer 
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Material Buffer 
-			{GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER}	// Depth Buffer
+			//{GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER}	// Depth Buffer
 		});
 		screen = new Mesh(new RectangleGeometry(2, 2));
 
@@ -46,7 +47,7 @@ public:
 
 
 	void render(Object3D* root, Camera* camera) {
-		camera->updateMatrices();
+		mat4 viewProjectionMatrix = camera->getViewProjectionMatrix();
 		vec3 viewPos = camera->getWorldPosition();
 
 		// Geometery Pass
@@ -58,6 +59,7 @@ public:
 		gBuffer->bind();
 
 		Shaders::Geometry->use();
+		Shaders::Geometry->setMat4("viewProjectionMatrix",viewProjectionMatrix);
 		Shaders::Geometry->setVec3("viewPos",viewPos);
 		Shaders::Geometry->setInt("albedoMap", 0);
 		Shaders::Geometry->setInt("roughnessMap", 1);
@@ -83,8 +85,19 @@ public:
 			glBindTexture(GL_TEXTURE_2D, gBuffer->buffers[i]);
 		}
 
-		lighting.illuminate(viewPos);
+		lighting.illuminate(viewPos,viewProjectionMatrix);
 		lighting.clear();
+
+
+		/*
+		// Debug
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+		Shaders::Basic->use();
+		Shaders::Basic->setMat4("viewProjectionMatrix", viewProjectionMatrix);
+		root->render(Shaders::Basic);
+		*/
+
 	}
 
 

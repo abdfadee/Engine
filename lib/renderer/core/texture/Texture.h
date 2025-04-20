@@ -13,11 +13,9 @@
 using namespace std;
 
 
-
-
 class Texture {
 	GLuint id;
-	unsigned int repeation = 1;
+    vec2 uvMultiplier = vec2(1);
 
 
 public:
@@ -34,10 +32,16 @@ public:
     }
 
 
-	void bind(unsigned int textureUnit = 0) {
+	void bind(Shader *shader , unsigned int textureUnit = 0) {
 		glActiveTexture(GL_TEXTURE0 + textureUnit);
 		glBindTexture(GL_TEXTURE_2D, id);
+        shader->setVec2("uvMultiplier", uvMultiplier);
 	}
+
+
+    void repeat(float uRepeat , float vRepeat) {
+        uvMultiplier = vec2(uRepeat, vRepeat);
+    }
 
 
     static GLuint loadTexture(const char* path, bool gamma = false)

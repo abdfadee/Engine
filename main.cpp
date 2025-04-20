@@ -29,23 +29,30 @@ int main() {
 	Texture* roughness = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg" };
 	Texture* metallic = new Texture{ "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg" };
 
+	float uRepeat = 2.0f , vRepeat = 2.0f;
+	albedo->repeat(uRepeat, vRepeat);
+	normal->repeat(uRepeat, vRepeat);
+	displacment->repeat(uRepeat, vRepeat);
+	roughness->repeat(uRepeat, vRepeat);
+	metallic->repeat(uRepeat, vRepeat);
+
 	Object3D* space = new Object3D{};
 
 	Mesh* b = new Mesh{
-		new BoxGeometry{12,12,4},
+		new BoxGeometry{6,6,3},
 		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
-		new Material{albedo,roughness,nullptr,normal,displacment,0.2f}
+		new Material{albedo,roughness,nullptr,normal,displacment,0.1f}
 	};
-	b->translate(vec3(0,0,-3));
+	//b->translate(vec3(0,0,-3));
 	space->add(b);
 
 	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
-		15.0f,
-		15.0f
+		5.0f,
+		5.0f
 	);
-	l1->translate(vec3(2,2,1));
+	l1->translate(vec3(0,0,3));
 	//space->add(l1);
 
 	PointLight* l2 = new PointLight(
@@ -55,25 +62,9 @@ int main() {
 	);
 	l2->translate(vec3(-2, 2, 1));
 	//space->add(l2);
-
-	PointLight* l3 = new PointLight(
-		vec3(1.0f),
-		15.0f,
-		10.0f
-	);
-	l3->translate(vec3(-2, -2, 1));
-	//space->add(l3);
-	
-	PointLight* l4 = new PointLight(
-		vec3(1.0f),
-		15.0f,
-		10.0f
-	);
-	l4->translate(vec3(2, -2, 1));
-	//space->add(l4);
 	
 	
-	RectAreaLight* l5 = new RectAreaLight(
+	RectAreaLight* l3 = new RectAreaLight(
 		vec3(1.0f),
 		15.0f,
 		vec3(-1,0,0),
@@ -81,41 +72,40 @@ int main() {
 		4,
 		4
 	);
-	l5->translate(vec3(4, 0, 0));
-	//space->add(l5);
+	l3->translate(vec3(4, 0, 0));
+	//space->add(l3);
 	
 
-	RectAreaLight* l6 = new RectAreaLight(
+	RectAreaLight* l4 = new RectAreaLight(
 		vec3(1.0f),
-		15.0f,
-		vec3(1, 0, 0),
+		5.0f,
+		vec3(0, 0, -1),
 		4,
 		4,
-		4
+		5
 	);
-	l6->translate(vec3(-4, 0, 0));
-	//space->add(l6);
+	l4->translate(vec3(0, 0, 4));
+	//space->add(l4);
 	
 	
-
 	
-	SpotLight* l7 = new SpotLight(
+	SpotLight* l5 = new SpotLight(
 		vec3(1.0f),
-		15.0f,
+		5.0f,
 		vec3(0, 0, -1),
 		radians(45.0f),
 		radians(60.0f),
-		4.0f
+		5.0f
 	);
-	l7->translate(vec3(0, 0, 3));
-	space->add(l7);
+	l5->translate(vec3(0, 0, 3));
+	space->add(l5);
 	
 	
 
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
-	camera->translate(vec3(0,0,5));
+	camera->translate(vec3(0,0,3));
 	//space->add(camera);
 
 

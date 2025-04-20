@@ -5,14 +5,10 @@ layout(location = 2) in vec2 aTexCoords;
 layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
 
-layout(std140) uniform CameraBuffer {
-    mat4 view;
-    mat4 projection;
-};
+uniform mat4 viewProjectionMatrix;
 uniform mat4 model;
 uniform mat3 normalMatrix;
-uniform float uvMultiplier = 3.0;
-
+uniform vec2 uvMultiplier;
 
 out FS_IN {
     vec3 FragPos;
@@ -23,12 +19,12 @@ out FS_IN {
 
 void main() {
     vs_out.FragPos = vec3(model * vec4(aPosition,1.0));
-    vs_out.TexCoords = uvMultiplier * aTexCoords;
+    vs_out.TexCoords = vec2(uvMultiplier.x * aTexCoords.x , uvMultiplier.y * aTexCoords.y);
     
     vec3 T = normalize(normalMatrix * aTangent);
     vec3 B = normalize(normalMatrix * aBitangent);
     vec3 N = normalize(normalMatrix * aNormal);
     vs_out.TBN = mat3(T, B, N);
 
-    gl_Position = projection * view * vec4(vs_out.FragPos,1.0);
+    gl_Position = viewProjectionMatrix * vec4(vs_out.FragPos,1.0);
 }

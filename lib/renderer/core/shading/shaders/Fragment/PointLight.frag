@@ -2,8 +2,6 @@
 
 const float PI = 3.14159265359;
 
-in mat4 inverseProjView;
-
 struct Light {
     vec3 position;
     vec3 color;
@@ -14,10 +12,10 @@ uniform Light light;
 uniform vec3 viewPos;
 uniform vec2 pixelSize;
 
+uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
-uniform sampler2D gDepth;
 
 out vec4 FragColor;
 
@@ -66,9 +64,7 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 void main() {
     // Reconstructing World Coordinantes
     vec2 TexCoords = vec2(( gl_FragCoord.x * pixelSize.x) ,(gl_FragCoord.y * pixelSize.y));
-    vec3 pos = vec3(TexCoords , texture(gDepth , TexCoords).r);
-    vec4 clip = inverseProjView * vec4(pos * 2.0 - 1.0 , 1.0);
-    pos = clip.xyz / clip.w ;
+    vec3 pos = vec3(texture(gPosition , TexCoords));
     
     // Light Distance Check
     vec3 lightDir = light.position-pos;

@@ -41,7 +41,7 @@ public:
 
 		for (int i = 0; i < 6; ++i) {
 			if (textureMaps[i] != nullptr)
-				textureMaps[i]->bind(i);
+				textureMaps[i]->bind(shader,i);
 			else {
 				glActiveTexture(GL_TEXTURE0 + i);
 				glBindTexture(GL_TEXTURE_2D, 0);

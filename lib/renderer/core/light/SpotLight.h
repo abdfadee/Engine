@@ -57,7 +57,7 @@ public:
 
 		glm::vec3 v = viewPos - position;
 		float t = glm::dot(v, direction);
-		if (t < 0.0f || t > distance + 0.1) {
+		if (t < 0.0f || t > distance) {
 			glCullFace(GL_BACK); // outside along axis
 		}
 		
@@ -69,18 +69,14 @@ public:
 			else
 				glCullFace(GL_BACK);
 		}
-		
-
-		cout << direction << endl;
-		cout << length(v) << endl;
 
 		
 		shader->setVec3("light.position", position);
 		shader->setVec3("light.direction", direction);
 		shader->setFloat("light.distance", distance);
 		shader->setFloat("light.cosTheta2", cosTheta2);
-		shader->setFloat("light.innerCutoff",innerCutOff);
-		shader->setFloat("light.outerCutoff", outerCutOff);
+		shader->setFloat("light.innerCutOff",innerCutOff);
+		shader->setFloat("light.outerCutOff", outerCutOff);
 
 		shader->setMat4("model", worldMatrix);
 		draw();

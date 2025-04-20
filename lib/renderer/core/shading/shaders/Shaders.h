@@ -11,6 +11,7 @@ using namespace glm;
 class Shaders {
 public:
     inline static Shader
+        *Basic,
         *Geometry,
         *PointLight,
         *RectAreaLight,
@@ -18,29 +19,13 @@ public:
         *AmbientLight;
 
 
-
     static void compile() {
+        Basic = new Shader("lib/renderer/core/shading/shaders/Vertex/Basic.vert", "lib/renderer/core/shading/shaders/Fragment/Basic.frag");
         Geometry = new Shader("lib/renderer/core/shading/shaders/Vertex/Geometry.vert", "lib/renderer/core/shading/shaders/Fragment/Geometry.frag");
         PointLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/PointLight.frag");
         RectAreaLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/RectAreaLight.frag");
         SpotLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/SpotLight.frag");
         AmbientLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/AmbientLight.frag");
     }
-
-
-    static void bindBuffers() {
-        Geometry->bindBlock("CameraBuffer", 0);
-        PointLight->bindBlock("CameraBuffer", 0);
-        RectAreaLight->bindBlock("CameraBuffer", 0);
-        SpotLight->bindBlock("CameraBuffer", 0);
-        AmbientLight->bindBlock("CameraBuffer", 0);
-    }
-
-
-    static void prepare() {
-        Shaders::compile();
-        Shaders::bindBuffers();
-    }
-
 
 };

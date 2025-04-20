@@ -10,39 +10,40 @@ public:
 	vector<Light*> ambientLights;
 
 
-	void shaderInit(Shader* shader,vec3 &viewPos,vec2 &pixelSize) {
+	void shaderInit(Shader* shader,vec2& pixelSize,vec3 &viewPos, mat4& viewProjectionMatrix) {
 		shader->use();
+		shader->setMat4("viewProjectionMatrix", viewProjectionMatrix);
 		shader->setVec3("viewPos", viewPos);
 		shader->setVec2("pixelSize", pixelSize);
-		shader->setInt("gNormal", 0);
-		shader->setInt("gAlbedo", 1);
-		shader->setInt("gMaterial", 2);
-		shader->setInt("gDepth", 3);
+		shader->setInt("gPosition", 0);
+		shader->setInt("gNormal", 1);
+		shader->setInt("gAlbedo", 2);
+		shader->setInt("gMaterial", 3);
 	}
 
 
-	void illuminate(vec3 viewPos) {
+	void illuminate(vec3 &viewPos,mat4 &viewProjectionMatrix) {
 		int viewport[4];
 		glGetIntegerv(GL_VIEWPORT, viewport);
 		vec2 pixelSize = vec2(1.0f / viewport[2], 1.0f / viewport[3]);
 
 		/* Point Lights */
-		shaderInit(Shaders::PointLight,viewPos,pixelSize);
+		shaderInit(Shaders::PointLight,pixelSize,viewPos,viewProjectionMatrix);
 		for (int i = 0; i < pointLights.size(); ++i)
 			pointLights[i]->bind(Shaders::PointLight,viewPos);
 
 		/* RectArea Lights */
-		shaderInit(Shaders::RectAreaLight, viewPos, pixelSize);
+		shaderInit(Shaders::RectAreaLight, pixelSize, viewPos, viewProjectionMatrix);
 		for (int i = 0; i < rectAreaLights.size(); ++i)
 			rectAreaLights[i]->bind(Shaders::RectAreaLight, viewPos);
 
 		/* Spot Lights */
-		shaderInit(Shaders::SpotLight, viewPos, pixelSize);
+		shaderInit(Shaders::SpotLight, pixelSize, viewPos, viewProjectionMatrix);
 		for (int i = 0; i < spotLights.size(); ++i)
 			spotLights[i]->bind(Shaders::SpotLight, viewPos);
 
 		/* Ambient Lights */
-		shaderInit(Shaders::AmbientLight, viewPos, pixelSize);
+		shaderInit(Shaders::AmbientLight, pixelSize, viewPos, viewProjectionMatrix);
 		for (int i = 0; i < ambientLights.size(); ++i)
 			ambientLights[i]->bind(Shaders::AmbientLight, viewPos);
 	}

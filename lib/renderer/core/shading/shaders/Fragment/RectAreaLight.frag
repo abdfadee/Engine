@@ -2,8 +2,6 @@
 
 const float PI = 3.14159265359;
 
-in mat4 inverseProjView;
-
 struct Light {
     vec3 position;
     vec3 center;
@@ -16,10 +14,10 @@ uniform Light light;
 uniform vec3 viewPos;
 uniform vec2 pixelSize;
 
+uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
-uniform sampler2D gDepth;
 
 out vec4 FragColor;
 
@@ -68,21 +66,18 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 void main() {
     // Reconstructing World Coordinantes
     vec2 TexCoords = vec2(( gl_FragCoord.x * pixelSize.x) ,(gl_FragCoord.y * pixelSize.y));
-    vec3 pos = vec3(TexCoords , texture(gDepth , TexCoords).r);
-    vec4 clip = inverseProjView * vec4(pos * 2.0 - 1.0 , 1.0);
-    pos = clip.xyz / clip.w ;
-    
+    vec3 pos = vec3(texture(gPosition , TexCoords));
     
     // Light Distance Check
     vec3 d = pos - light.center;
     for (int i = 0; i < 3; ++i) {
 	float dist = dot(d, light.axes[i]);
-	if (abs(dist) > light.halfSizes[i] + 0.1)
+	if (abs(dist) > light.halfSizes[i])
         discard;
     }
     
-    vec3 lightDir = -light.axes[2];
-    float distance = length(light.position-pos);
+    // Compute Distance
+    float distance = dot(light.axes[2], pos - light.center) + light.halfSizes[2];
     
     // Screen Space To World
     vec3 V = normalize(viewPos - pos);
@@ -101,7 +96,7 @@ void main() {
     // reflectance equation
     vec3 Lo = vec3(0.0);
     // calculate per-light radiance
-    vec3 L = normalize(lightDir);
+    vec3 L = -normalize(light.axes[2]);
     vec3 H = normalize(V + L);
     float attenuation = 1.0 / (distance * distance);
     vec3 radiance = light.color * light.intensity * attenuation;
@@ -138,6 +133,5 @@ void main() {
     //vec3 color = ambient + Lo;
     
     FragColor = vec4(Lo,1.0);
-    //FragColor = vec4(texture(gNormal,TexCoords).xyz,1.0);
-    //FragColor = vec4(light.axes[2],1.0);
+    //FragColor = vec4(1.0);
 }
