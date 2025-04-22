@@ -7,7 +7,6 @@
 using namespace glm;
 
 
-/* Shaders */
 class Shaders {
 public:
     inline static Shader
@@ -31,11 +30,12 @@ public:
         RectAreaLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/RectAreaLight.frag");
         SpotLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/SpotLight.frag");
         AmbientLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/AmbientLight.frag");
-        Skybox = new Shader("Shaders/Vertex/Skybox.vert", "Shaders/Fragment/Cubemap.frag");
-        ShadowMapping = new Shader("Shaders/Vertex/ShadowMapping.vert", "Shaders/Fragment/ShadowMapping.frag");
-        DirectionalDepthMap = new Shader("Shaders/Vertex/DepthMap.vert", "Shaders/Fragment/DirectionalDepthMap.frag");
-        VisualizingDepth = new Shader("Shaders/Vertex/DepthMap.vert", "Shaders/Fragment/VisualizingDepth.frag");
-        OmnidirectionalDepthMap = new Shader("Shaders/Vertex/DepthMap.vert", "Shaders/Fragment/OmnidirectionalDepthMap.frag", "Shaders/Geometry/Omnidirectional.geom");
+        
+        Skybox = new Shader("lib/renderer/core/shading/shaders/Vertex/Skybox.vert", "lib/renderer/core/shading/shaders/Fragment/Cubemap.frag");
+        ShadowMapping = new Shader("lib/renderer/core/shading/shaders/Vertex/ShadowMapping.vert", "lib/renderer/core/shading/shaders/Fragment/ShadowMapping.frag");
+        DirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/DirectionalDepthMap.frag");
+        OmnidirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/OmnidirectionalDepthMap.frag", "lib/renderer/core/shading/shaders/Geometry/Omnidirectional.geom");
+        VisualizingDepth = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/VisualizingDepth.frag");
     }
 
 };

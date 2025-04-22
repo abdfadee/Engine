@@ -19,7 +19,7 @@ public:
 		halfSizes[0] = width / 2; halfSizes[1] = height / 2; halfSizes[2] = distance / 2;
 		direction = normalize(direction);
 		float yaw = glm::pi<float>() + std::atan2(direction.x, direction.z);   // around Y
-		float pitch = -std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
+		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
 		rotation = vec3(pitch, yaw, 0);
 	}
 
@@ -48,6 +48,7 @@ public:
 		axes[0] = normalize(directionMatrix * vec3(1, 0, 0));
 		axes[1] = normalize(directionMatrix * vec3(0, 1, 0));
 		axes[2] = normalize(directionMatrix * vec3(0, 0, -1));
+		cout << axes[2] << endl;
 
 		vec3 d = viewPos - center;
 		glCullFace(GL_FRONT);

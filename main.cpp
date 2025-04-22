@@ -29,7 +29,7 @@ int main() {
 	Texture* roughness = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg" };
 	Texture* metallic = new Texture{ "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg" };
 
-	float uRepeat = 2.0f , vRepeat = 2.0f;
+	float uRepeat = 3.0f , vRepeat = 3.0f;
 	albedo->repeat(uRepeat, vRepeat);
 	normal->repeat(uRepeat, vRepeat);
 	displacment->repeat(uRepeat, vRepeat);
@@ -39,73 +39,52 @@ int main() {
 	Object3D* space = new Object3D{};
 
 	Mesh* b = new Mesh{
-		new BoxGeometry{3,3,3},
+		new BoxGeometry{10,10,0.05},
 		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
 		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
 	};
-	//b->translate(vec3(0,0,-3));
+	b->rotate(vec3(radians(90.0f),0,0));
 	space->add(b);
 
 	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
-		5.0f,
-		5.0f
+		25.0f,
+		15.0f
 	);
-	l1->translate(vec3(0,0,3));
+	l1->translate(vec3(0,5,0));
 	//space->add(l1);
-
-	PointLight* l2 = new PointLight(
+	
+	
+	RectAreaLight* l2 = new RectAreaLight(
 		vec3(1.0f),
-		15.0f,
-		10.0f
+		100.0f,
+		vec3(-1,-1,1),
+		40,
+		40,
+		40
 	);
-	l2->translate(vec3(-2, 2, 1));
+	l2->translate(vec3(5, 10, -5));
 	//space->add(l2);
 	
 	
-	RectAreaLight* l3 = new RectAreaLight(
+	SpotLight* l3 = new SpotLight(
 		vec3(1.0f),
-		15.0f,
-		vec3(-1,0,0),
-		4,
-		4,
-		4
-	);
-	l3->translate(vec3(4, 0, 0));
-	//space->add(l3);
-	
-
-	RectAreaLight* l4 = new RectAreaLight(
-		vec3(1.0f),
-		5.0f,
-		vec3(0, 0, -1),
-		4,
-		4,
-		5
-	);
-	l4->translate(vec3(0, 0, 4));
-	//space->add(l4);
-	
-	
-	
-	SpotLight* l5 = new SpotLight(
-		vec3(1.0f),
-		15.0f,
-		vec3(0, 0, -1),
+		90.0f,
+		vec3(-1, -1, 1),
 		radians(45.0f),
 		radians(25.0f),
-		5.0f
+		15.0f
 	);
-	l5->translate(vec3(0, 0, 4));
-	space->add(l5);
+	l3->translate(vec3(5, 5, -5));
+	space->add(l3);
 	
 	
 
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
-	camera->translate(vec3(0,0,5));
+	camera->translate(vec3(0,5,5));
 	//space->add(camera);
 
 

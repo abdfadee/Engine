@@ -10,13 +10,11 @@
 class SpotLight : public Light{
 	float innerCutOff, outerCutOff, distance , cosTheta2;
 	vec3 rotation, position;
-	PointLight* ambientLight;
 
 public:
 	SpotLight(vec3 color, float intensity, vec3 direction, float oc, float ic, float distance) :
 		distance(distance), outerCutOff(cos(oc)), innerCutOff(cos(ic)),
-		Light(color, intensity, new ConeGeometry(distance * tan(oc), distance)),
-		ambientLight(new PointLight(color, intensity, distance * 2))
+		Light(color, intensity, new ConeGeometry(distance * tan(oc), distance))
 	{
 		float baseRadius = distance * tan(oc);
 		float cosTheta = cos(atan(baseRadius / distance));
@@ -24,7 +22,7 @@ public:
 
 		direction = normalize(direction);
 		float yaw = glm::pi<float>() + std::atan2(direction.x, direction.z);   // around Y
-		float pitch = -std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
+		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
 		rotation = vec3(pitch, yaw, 0);
 	}
 
@@ -41,9 +39,6 @@ public:
 
 		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
 		Renderer::lighting.spotLights.push_back(this);
-		
-		//Renderer::lighting.ambientLights.push_back(ambientLight);
-		//ambientLight->worldMatrix = originalMatrix;
 	}
 
 
@@ -62,7 +57,7 @@ public:
 		else {
 			float d2 = glm::dot(v, v);
 			float cosAlpha2 = (t * t) / d2;
-			if (cosAlpha2 >= cosTheta2 - 0.1)
+			if (cosAlpha2 >= cosTheta2)
 				glCullFace(GL_FRONT);
 			else
 				glCullFace(GL_BACK);

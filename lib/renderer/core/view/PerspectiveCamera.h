@@ -11,7 +11,7 @@ class PerspectiveCamera : public Camera {
 public:
 	float fov, znear, zfar;
 
-	PerspectiveCamera(float fov = 45.0f, float znear = 0.1f, float zfar = 50.0f, float sensetivity = 0.1f) :
+	PerspectiveCamera(float fov = 45.0f, float znear = 0.001f, float zfar = 50.0f, float sensetivity = 0.1f) :
 		Camera(sensetivity),
 		fov(fov),
 		znear(znear),

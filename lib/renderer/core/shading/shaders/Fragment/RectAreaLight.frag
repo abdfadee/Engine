@@ -129,9 +129,9 @@ void main() {
 
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
-    //vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
-    //vec3 color = ambient + Lo;
+    vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
+    vec3 color = ambient + Lo;
     
-    FragColor = vec4(Lo,1.0);
+    FragColor = vec4(color,1.0);
     //FragColor = vec4(1.0);
 }
