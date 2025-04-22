@@ -1,0 +1,32 @@
+vec2 RaymarchedParallaxMapping(vec2 texCoords, vec3 viewDir)
+{
+    const float minLayers = 32.0;
+    const float maxLayers = 256.0;
+    
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
+    float layerDepth = 1.0 / numLayers;
+    vec2 P = viewDir.xy * heightScale;
+    vec2 deltaTexCoords = P / numLayers;
+    
+    vec2 currentTexCoords = texCoords;
+    float currentLayerDepth = 0.0;
+    float depthMapValue = 1.0 - texture(displacmentMap, currentTexCoords).r;
+    
+    while (currentLayerDepth < depthMapValue) {
+        currentTexCoords -= deltaTexCoords;
+        depthMapValue = 1.0 - texture(displacmentMap, currentTexCoords).r;
+        currentLayerDepth += layerDepth;
+    }
+    
+    // Binary search refinement
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    float afterDepth = depthMapValue - currentLayerDepth;
+    float beforeDepth = (1.0 - texture(displacmentMap, prevTexCoords).r) - (currentLayerDepth - layerDepth);
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    
+    return mix(currentTexCoords, prevTexCoords, weight);
+}
+
+
+
+
