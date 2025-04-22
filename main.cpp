@@ -39,9 +39,9 @@ int main() {
 	Object3D* space = new Object3D{};
 
 	Mesh* b = new Mesh{
-		new BoxGeometry{6,6,3},
+		new BoxGeometry{3,3,3},
 		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
-		new Material{albedo,roughness,nullptr,normal,displacment,0.1f}
+		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
 	};
 	//b->translate(vec3(0,0,-3));
 	space->add(b);
@@ -91,13 +91,13 @@ int main() {
 	
 	SpotLight* l5 = new SpotLight(
 		vec3(1.0f),
-		5.0f,
+		15.0f,
 		vec3(0, 0, -1),
 		radians(45.0f),
-		radians(60.0f),
+		radians(25.0f),
 		5.0f
 	);
-	l5->translate(vec3(0, 0, 3));
+	l5->translate(vec3(0, 0, 4));
 	space->add(l5);
 	
 	
@@ -105,7 +105,7 @@ int main() {
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
-	camera->translate(vec3(0,0,3));
+	camera->translate(vec3(0,0,5));
 	//space->add(camera);
 
 

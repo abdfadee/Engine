@@ -2,8 +2,6 @@
 
 const float PI = 3.14159265359;
 
-in mat4 inverseProjView;
-
 struct Light {
     vec3 position;
     vec3 direction;
@@ -18,10 +16,10 @@ uniform Light light;
 uniform vec3 viewPos;
 uniform vec2 pixelSize;
 
+uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
-uniform sampler2D gDepth;
 
 out vec4 FragColor;
 
@@ -70,11 +68,8 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 void main() {
     // Reconstructing World Coordinantes
     vec2 TexCoords = vec2(( gl_FragCoord.x * pixelSize.x) ,(gl_FragCoord.y * pixelSize.y));
-    vec3 pos = vec3(TexCoords , texture(gDepth , TexCoords).r);
-    vec4 clip = inverseProjView * vec4(pos * 2.0 - 1.0 , 1.0);
-    pos = clip.xyz / clip.w ;
+    vec3 pos = vec3(texture(gPosition , TexCoords));
     
-    /*
     // Light Distance Check
     vec3 v = pos - light.position;
     float t = dot(v, light.direction);
@@ -86,7 +81,6 @@ void main() {
         if (cosAlpha2 < light.cosTheta2 - 0.001)
             discard;
     }
-    */
     
     
     vec3 lightDir = light.position-pos;
@@ -141,11 +135,11 @@ void main() {
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     
     // spotlight (soft edges)
-    float theta = dot(lightDir, normalize(light.direction)); 
+    float theta = dot(L, normalize(-light.direction)); 
     float epsilon = (light.innerCutOff - light.outerCutOff);
-    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-    vec3 color = Lo;
+    float i = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    vec3 color = i * Lo;
     
-    //FragColor = vec4(color,1.0);
-    FragColor = vec4(vec3(intensity),1.0);
+    FragColor = vec4(color,1.0);
+    //FragColor = vec4(i);
 }

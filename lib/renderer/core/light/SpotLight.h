@@ -13,13 +13,12 @@ class SpotLight : public Light{
 	PointLight* ambientLight;
 
 public:
-	SpotLight(vec3 color, float intensity, vec3 direction, float outerCutOff, float innerCutOff, float distance) :
-		distance(distance),
-		Light(color, intensity, new ConeGeometry(distance * tan(outerCutOff), distance)),
-		ambientLight(new PointLight(color, intensity, distance * 2)),
-		outerCutOff(cos(outerCutOff)), innerCutOff(cos(innerCutOff))
+	SpotLight(vec3 color, float intensity, vec3 direction, float oc, float ic, float distance) :
+		distance(distance), outerCutOff(cos(oc)), innerCutOff(cos(ic)),
+		Light(color, intensity, new ConeGeometry(distance * tan(oc), distance)),
+		ambientLight(new PointLight(color, intensity, distance * 2))
 	{
-		float baseRadius = distance * tan(outerCutOff);
+		float baseRadius = distance * tan(oc);
 		float cosTheta = cos(atan(baseRadius / distance));
 		cosTheta2 = cosTheta * cosTheta;
 
@@ -43,8 +42,8 @@ public:
 		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
 		Renderer::lighting.spotLights.push_back(this);
 		
-		Renderer::lighting.ambientLights.push_back(ambientLight);
-		ambientLight->worldMatrix = originalMatrix;
+		//Renderer::lighting.ambientLights.push_back(ambientLight);
+		//ambientLight->worldMatrix = originalMatrix;
 	}
 
 
@@ -53,7 +52,6 @@ public:
 
 		mat3 directionMatrix = transpose(inverse(mat3(worldMatrix)));
 		vec3 direction = normalize(directionMatrix * vec3(0, -1, 0));
-
 
 		glm::vec3 v = viewPos - position;
 		float t = glm::dot(v, direction);
