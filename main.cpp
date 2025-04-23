@@ -68,39 +68,28 @@ int main() {
 	RectAreaLight* l2 = new RectAreaLight(
 		vec3(1.0f),
 		5.0f,
-		vec3(-1,-1,1),
-		40,
-		40,
-		40,
+		vec3(0,-1,0),
+		20,
+		20,
+		20,
 		true
 	);
-	l2->translate(vec3(5, 10, -5));
-	//space->add(l2);
+	l2->translate(vec3(0, 10, 0));
+	space->add(l2);
 	
 	
 	SpotLight* l3 = new SpotLight(
 		vec3(1.0f),
 		90.0f,
-		vec3(-1, -1, 1),
+		vec3(0, -1, 0),
 		radians(45.0f),
 		radians(25.0f),
 		15.0f
 	);
-	l3->translate(vec3(5, 5, -5));
+	l3->translate(vec3(0, 10, 0));
 	//space->add(l3);
 
-	
 
-	SpotLight* l4 = new SpotLight(
-		vec3(1.0f),
-		90.0f,
-		vec3(0, -1, 0),
-		radians(25.0f),
-		radians(15.0f),
-		15.0f
-	);
-	l4->translate(vec3(0, 10, 0));
-	space->add(l4);
 	
 
 
@@ -112,7 +101,7 @@ int main() {
 
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
-		l4->shadowMap->visulizeDepthMap(space);
+		l2->shadowMap->visulizeDepthMap(Renderer::screen);
 	};
 
 	renderer.setAnimationLoop(animationLoop);

@@ -17,13 +17,16 @@ class DirectionalShadowMapping {
 public:
 	FrameBuffer fbo;
 	mat4 projection, lightMatrix;
+	bool perspective;
 
 	DirectionalShadowMapping(double width, double height, float frustumWidth, float frustumHeight, float frustumDepth) :
+		perspective(false),
 		projection(ortho(-frustumWidth / 2.0f, frustumWidth / 2.0f, -frustumHeight / 2.0f, frustumHeight / 2.0f, 0.0f, frustumDepth)),
 		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
 	DirectionalShadowMapping(double width, double height,float fov, float frustumDepth) :
-		projection(perspective(fov, (float)(width / height), 0.001f, frustumDepth)),
+		perspective(true),
+		projection(glm::perspective(fov, (float)(width / height), 0.001f, frustumDepth)),
 		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
 
@@ -37,16 +40,19 @@ public:
 	}
 
 
-	void visulizeDepthMap(Object3D* root) {
+	void visulizeDepthMap(Object3D* screen) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 		Shaders::VisualizingDepth->use();
-		Shaders::VisualizingDepth->setMat4("spaceMatrix", lightMatrix);
+		Shaders::VisualizingDepth->setInt("depthMap",0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,getDepthMap());
 		Shaders::VisualizingDepth->setFloat("znear", 0.001f);
-		Shaders::VisualizingDepth->setFloat("zfar", 15.0f);
-		root->render(Shaders::VisualizingDepth, mat4(1));
+		Shaders::VisualizingDepth->setFloat("zfar", 100.0f);
+		Shaders::VisualizingDepth->setBool("perspective",perspective);
+		screen->render(Shaders::VisualizingDepth, mat4(1));
 	}
 
 

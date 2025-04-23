@@ -32,7 +32,7 @@ public:
         
         DirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/DirectionalDepthMap.frag");
         OmnidirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/OmnidirectionalDepthMap.frag", "lib/renderer/core/shading/shaders/Geometry/Omnidirectional.geom");
-        VisualizingDepth = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/VisualizingDepth.frag");
+        VisualizingDepth = new Shader("lib/renderer/core/shading/shaders/Vertex/PostProcessing.vert", "lib/renderer/core/shading/shaders/Fragment/VisualizingDepth.frag");
         Skybox = new Shader("lib/renderer/core/shading/shaders/Vertex/Skybox.vert", "lib/renderer/core/shading/shaders/Fragment/Cubemap.frag");
     }
 
