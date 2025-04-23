@@ -28,7 +28,7 @@ class SpotLight : public Light{
 		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
 		rotation = vec3(pitch, yaw, 0);
 
-		shadowMap = new DirectionalShadowMapping(800, 800, oc,0.001,distance);
+		shadowMap = new DirectionalShadowMapping(800, 800, oc ,distance);
 	}
 
 

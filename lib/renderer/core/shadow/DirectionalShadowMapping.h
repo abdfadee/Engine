@@ -20,13 +20,11 @@ public:
 
 	DirectionalShadowMapping(double width, double height, float frustumWidth, float frustumHeight, float frustumDepth) :
 		projection(ortho(-frustumWidth / 2.0f, frustumWidth / 2.0f, -frustumHeight / 2.0f, frustumHeight / 2.0f, 0.0f, frustumDepth)),
-		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {
-	}
+		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
 	DirectionalShadowMapping(double width, double height,float fov, float frustumDepth) :
 		projection(perspective(fov, (float)(width / height), 0.001f, frustumDepth)),
-		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {
-	}
+		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
 
 	void updateDepthMap(vec3 pos, vec3 direction, vec3 up ,Object3D* root) {
@@ -46,6 +44,8 @@ public:
 
 		Shaders::VisualizingDepth->use();
 		Shaders::VisualizingDepth->setMat4("spaceMatrix", lightMatrix);
+		Shaders::VisualizingDepth->setFloat("znear", 0.001f);
+		Shaders::VisualizingDepth->setFloat("zfar", 15.0f);
 		root->render(Shaders::VisualizingDepth, mat4(1));
 	}
 

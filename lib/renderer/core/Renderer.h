@@ -73,7 +73,7 @@ public:
 
 
 		// Shadow Pass
-		//lighting.updateDepthMaps(root);
+		lighting.updateDepthMaps(root);
 
 
 		// Light Pass

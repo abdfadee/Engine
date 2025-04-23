@@ -95,8 +95,8 @@ int main() {
 		vec3(1.0f),
 		90.0f,
 		vec3(0, -1, 0),
-		radians(90.0f),
-		radians(45.0f),
+		radians(25.0f),
+		radians(15.0f),
 		15.0f
 	);
 	l4->translate(vec3(0, 10, 0));
