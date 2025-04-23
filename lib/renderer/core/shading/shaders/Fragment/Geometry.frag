@@ -6,7 +6,10 @@ in FS_IN {
     mat3 TBN;
 } fs_in ;
 
-uniform mat4 viewProjectionMatrix;
+layout(std140) uniform View {
+    mat4 viewProjectionMatrix;
+};
+
 uniform vec3 viewPos;
 uniform vec3 color = vec3(0.0);
 uniform float metallic;
@@ -33,7 +36,7 @@ float parallaxHeight = 0.0;
 vec2 RaymarchedParallaxMapping(vec2 TexCoords, vec3 viewDir)
 {
     const float minLayers = 8.0;
-    const float maxLayers = 32.0;
+    const float maxLayers = 64.0;
     
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
     float layerDepth = 1.0 / numLayers;

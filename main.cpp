@@ -38,12 +38,21 @@ int main() {
 
 	Object3D* space = new Object3D{};
 
-	Mesh* b = new Mesh{
+
+	Mesh* floor = new Mesh{
 		new BoxGeometry{10,10,0.05},
 		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
 		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
 	};
-	b->rotate(vec3(radians(90.0f),0,0));
+	floor->rotate(vec3(radians(90.0f),0,0));
+	space->add(floor);
+
+
+	Mesh* b = new Mesh{
+		new BoxGeometry{1,1,1},
+		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
+	};
+	b->translate(vec3(0,5,0));
 	space->add(b);
 
 	
@@ -58,11 +67,12 @@ int main() {
 	
 	RectAreaLight* l2 = new RectAreaLight(
 		vec3(1.0f),
-		100.0f,
+		5.0f,
 		vec3(-1,-1,1),
 		40,
 		40,
-		40
+		40,
+		true
 	);
 	l2->translate(vec3(5, 10, -5));
 	//space->add(l2);
@@ -77,8 +87,20 @@ int main() {
 		15.0f
 	);
 	l3->translate(vec3(5, 5, -5));
-	space->add(l3);
+	//space->add(l3);
+
 	
+
+	SpotLight* l4 = new SpotLight(
+		vec3(1.0f),
+		90.0f,
+		vec3(0, -1, 0),
+		radians(90.0f),
+		radians(45.0f),
+		15.0f
+	);
+	l4->translate(vec3(0, 10, 0));
+	space->add(l4);
 	
 
 
@@ -89,14 +111,8 @@ int main() {
 
 
 	auto animationLoop = [&](float deltaTime) {
-		//space->rotate(vec3(0, radians(0.1f), 0));
-		//l7->rotate(vec3(0, radians(0.1f), 0));
-		//space->translate(vec3(0.02,0,0));
-		//space->rotate(vec3(0, 0.1,0));
-		//b->rotate(vec3(0, radians(0.1f), 0));
-		//camera.rotate(vec3(0, 0.001,0));
-		//space->scale(vec3(1.001));
 		renderer.render(space,camera);
+		l4->shadowMap->visulizeDepthMap(space);
 	};
 
 	renderer.setAnimationLoop(animationLoop);

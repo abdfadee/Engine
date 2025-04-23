@@ -9,6 +9,7 @@ struct Light {
     float halfSizes[3];
     vec3 color;
     float intensity;
+    bool unified;
 };
 uniform Light light;
 uniform vec3 viewPos;
@@ -98,7 +99,7 @@ void main() {
     // calculate per-light radiance
     vec3 L = -normalize(light.axes[2]);
     vec3 H = normalize(V + L);
-    float attenuation = 1.0 / (distance * distance);
+    float attenuation = light.unified ? 1.0 : (1.0 / (distance * distance));
     vec3 radiance = light.color * light.intensity * attenuation;
 
     // Cook-Torrance BRDF

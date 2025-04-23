@@ -24,7 +24,7 @@ public:
 
 
 	Camera(float sensetivity = 0.1f) :
-		cameraBuffer(UBO(0, 32 * sizeof(float))),
+		cameraBuffer(UBO(0, sizeof(mat4))),
 		sensetivity(sensetivity) {
 		view = glm::lookAt(positionVector, positionVector + cameraFront, cameraUp);
 	}
@@ -73,7 +73,7 @@ public:
 	}
 
 
-	mat4 getViewProjectionMatrix() {
+	void updateViewProjectionMatrix() {
 		worldMatrix = getWorldMatrix();
 
 		mat3 directionMatrix = transpose(inverse(mat3(worldMatrix)));
@@ -84,7 +84,8 @@ public:
 
 		view = glm::lookAt(position, position + cameraFront, cameraUp);
 
-		return projection * view;
+		mat4 viewProjectionMatrix = projection * view;
+		cameraBuffer.upload(0,sizeof(viewProjectionMatrix),&viewProjectionMatrix);
 	}
 
 
@@ -98,10 +99,5 @@ public:
 
 		setRotation(vec3(pitch,yaw,0));
 	}
-
-
-	struct CameraBuffer {
-		mat4 view, projection;
-	};
 
 };

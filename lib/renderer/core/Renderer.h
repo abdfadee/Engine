@@ -31,6 +31,7 @@ public:
 	Renderer (GLFWwindow* window , GLuint width , GLuint height) : 
 		width(width), height(height), window(window) {
 		Shaders::compile();
+		Shaders::bind();
 		gBuffer = new FrameBuffer(width, height,GL_DEPTH_COMPONENT24, {
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Position Buffer
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Normal Buffer 
@@ -47,7 +48,7 @@ public:
 
 
 	void render(Object3D* root, Camera* camera) {
-		mat4 viewProjectionMatrix = camera->getViewProjectionMatrix();
+		camera->updateViewProjectionMatrix();
 		vec3 viewPos = camera->getWorldPosition();
 
 		// Geometery Pass
@@ -59,7 +60,6 @@ public:
 		gBuffer->bind();
 
 		Shaders::Geometry->use();
-		Shaders::Geometry->setMat4("viewProjectionMatrix",viewProjectionMatrix);
 		Shaders::Geometry->setVec3("viewPos",viewPos);
 		Shaders::Geometry->setInt("albedoMap", 0);
 		Shaders::Geometry->setInt("roughnessMap", 1);
@@ -68,8 +68,12 @@ public:
 		Shaders::Geometry->setInt("displacmentMap", 4);
 		Shaders::Geometry->setInt("aoMap", 5);
 
-		root->render(Shaders::Geometry);
+		root->render(Shaders::Geometry,mat4(1.0f),true,true);
 
+
+
+		// Shadow Pass
+		//lighting.updateDepthMaps(root);
 
 
 		// Light Pass
@@ -85,7 +89,7 @@ public:
 			glBindTexture(GL_TEXTURE_2D, gBuffer->buffers[i]);
 		}
 
-		lighting.illuminate(viewPos,viewProjectionMatrix);
+		lighting.illuminate(viewPos);
 		lighting.clear();
 
 

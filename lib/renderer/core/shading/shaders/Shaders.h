@@ -17,7 +17,6 @@ public:
         *SpotLight,
         *AmbientLight,
         *Skybox,
-        *ShadowMapping,
         *DirectionalDepthMap,
         *VisualizingDepth,
         *OmnidirectionalDepthMap;
@@ -31,11 +30,20 @@ public:
         SpotLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/SpotLight.frag");
         AmbientLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/AmbientLight.frag");
         
-        Skybox = new Shader("lib/renderer/core/shading/shaders/Vertex/Skybox.vert", "lib/renderer/core/shading/shaders/Fragment/Cubemap.frag");
-        ShadowMapping = new Shader("lib/renderer/core/shading/shaders/Vertex/ShadowMapping.vert", "lib/renderer/core/shading/shaders/Fragment/ShadowMapping.frag");
         DirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/DirectionalDepthMap.frag");
         OmnidirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/OmnidirectionalDepthMap.frag", "lib/renderer/core/shading/shaders/Geometry/Omnidirectional.geom");
         VisualizingDepth = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/VisualizingDepth.frag");
+        Skybox = new Shader("lib/renderer/core/shading/shaders/Vertex/Skybox.vert", "lib/renderer/core/shading/shaders/Fragment/Cubemap.frag");
     }
+
+
+    static void bind() {
+        Geometry->bindBlock("View",0);
+        PointLight->bindBlock("View", 0);
+        RectAreaLight->bindBlock("View", 0);
+        SpotLight->bindBlock("View", 0);
+        SpotLight->bindBlock("View", 0);
+    }
+
 
 };

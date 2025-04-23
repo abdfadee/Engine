@@ -61,8 +61,8 @@ public:
     }
 
 
-    virtual void render(Shader* shader , mat4 parentMatrix = mat4(1.0f), bool materialize = true) {
-        Object3D::render(shader,parentMatrix);
+    virtual void render(Shader* shader , mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
+        Object3D::render(shader,parentMatrix,materialize, geometeryPass);
 
         if (materialize)
             material->bind(shader);

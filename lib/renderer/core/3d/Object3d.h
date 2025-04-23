@@ -100,11 +100,11 @@ public:
         return vec3(worldMatrix * vec4(0.0f, 0.0f, 0.0f, 1.0f));
     }
 
-    virtual void render(Shader* shader, mat4 parentMatrix = mat4(1.0f),bool materialize = true) {
+    virtual void render(Shader* shader, mat4 parentMatrix = mat4(1.0f),bool materialize = false , bool geometeryPass = false) {
         worldMatrix = parentMatrix * getLocalMatrix();
 
         for (auto* child : children)
-            child->render(shader,worldMatrix);
+            child->render(shader,worldMatrix,materialize,geometeryPass);
     }
 
 };

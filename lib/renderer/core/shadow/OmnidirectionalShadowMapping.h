@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,49 +11,6 @@
 
 using namespace std;
 using namespace glm;
-
-
-class DirectionalShadowMapping {
-public:
-	FrameBuffer fbo;
-	mat4 projection, lightMatrix;
-
-	DirectionalShadowMapping(unsigned int width, unsigned int height, float frustumWidth = 10.0f, float frustumHeight = 10.0f, float frustumDepth = 10.0f) :
-		projection(ortho(-frustumWidth / 2.0f, frustumWidth / 2.0f, -frustumHeight / 2.0f, frustumHeight / 2.0f, 0.0f, frustumDepth)),
-		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {
-	}
-
-
-	void updateDepthMap(vec3 pos, vec3 direction, void(*render)(Shader& shader)) {
-		GLint currentFBO;
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentFBO);
-
-		vec3 look = normalize(pos + direction);
-		vec3 right = cross(look, vec3(0, 1, 0));
-		vec3 up = cross(right, look);
-		mat4 view = lookAt(pos, pos + direction, up);
-		lightMatrix = projection * view;
-		Shaders::DirectionalDepthMap.use();
-		Shaders::DirectionalDepthMap.setMat4("spaceMatrix", lightMatrix);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-		fbo.bind();
-		render(Shaders::DirectionalDepthMap);
-		glDisable(GL_CULL_FACE);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, currentFBO);
-	}
-
-
-	void visulizeDepthMap(void(*render)(Shader& shader)) {
-		Shaders::VisualizingDepth.use();
-		Shaders::VisualizingDepth.setMat4("spaceMatrix", lightMatrix);
-		render(Shaders::VisualizingDepth);
-	}
-
-
-};
-
 
 
 class OmnidirectionalShadowMapping {
