@@ -4,12 +4,12 @@
 #include "../Renderer.h"
 #include "../geometry/ConeGeometry.h"
 #include "../../utility/helpers.h"
-#include "../shadow/DirectionalShadowMapping.h"
+#include "../shadow/DirectionalShadow.h"
 
 
 class SpotLight : public Light{
 	public:
-	DirectionalShadowMapping* shadowMap;
+	DirectionalShadow* shadow;
 	mat3 directionMatrix;
 	float innerCutOff, outerCutOff, distance , cosTheta2;
 	vec3 rotation, position , direction , up;
@@ -28,7 +28,7 @@ class SpotLight : public Light{
 		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
 		rotation = vec3(pitch, yaw, 0);
 
-		shadowMap = new DirectionalShadowMapping(800, 800, oc ,distance);
+		shadow = new DirectionalShadow(oc ,distance);
 	}
 
 
@@ -84,8 +84,8 @@ class SpotLight : public Light{
 	}
 
 
-	void updateShadowMap(Object3D* root) {
-		shadowMap->updateDepthMap(position, direction, up, root);
+	void updateShadow(Object3D* root) {
+		shadow->updateDepthMap(position, direction, up, root);
 	}
 
 };

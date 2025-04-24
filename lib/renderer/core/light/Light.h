@@ -21,6 +21,6 @@ public:
 		shader->setFloat("light.intensity",intensity);
 	}
 
-	virtual void updateShadowMap(Object3D* root) {}
+	virtual void updateShadow(Object3D* root) {}
 
 };

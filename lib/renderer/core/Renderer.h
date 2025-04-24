@@ -18,20 +18,22 @@ using namespace std;
 
 class Renderer {
 public:
-	GLuint width, height;
 	FrameBuffer* gBuffer;
 	GLFWwindow* window;
 	double deltaTime, currentFrameTime, lastFrameTime;
 
+	inline static GLuint width, height;
 	inline static Mesh* screen;
 	inline static Lighting lighting;
 	
 
 public:
 	Renderer (GLFWwindow* window , GLuint width , GLuint height) : 
-		width(width), height(height), window(window) {
+		window(window) {
 		Shaders::compile();
 		Shaders::bind();
+		Renderer::width = width;
+		Renderer::height = height;
 		gBuffer = new FrameBuffer(width, height,GL_DEPTH_COMPONENT24, {
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Position Buffer
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Normal Buffer 

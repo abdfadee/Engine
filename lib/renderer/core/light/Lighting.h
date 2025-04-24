@@ -11,15 +11,17 @@ public:
 
 
 	void updateDepthMaps (Object3D* root) {
+		Shaders::OmnidirectionalDepthMap->use();
+		for (int i = 0; i < pointLights.size(); ++i)
+			pointLights[i]->updateShadow(root);
+
 
 		Shaders::DirectionalDepthMap->use();
-
 		for (int i = 0; i < rectAreaLights.size(); ++i)
-			rectAreaLights[i]->updateShadowMap(root);
+			rectAreaLights[i]->updateShadow(root);
 
 		for (int i = 0; i < spotLights.size(); ++i)
-			spotLights[i]->updateShadowMap(root);
-
+			spotLights[i]->updateShadow(root);
 	}
 
 

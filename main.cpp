@@ -61,8 +61,8 @@ int main() {
 		25.0f,
 		15.0f
 	);
-	l1->translate(vec3(0,5,0));
-	//space->add(l1);
+	l1->translate(vec3(0,10,0));
+	space->add(l1);
 	
 	
 	RectAreaLight* l2 = new RectAreaLight(
@@ -75,7 +75,7 @@ int main() {
 		true
 	);
 	l2->translate(vec3(0, 10, 0));
-	space->add(l2);
+	//space->add(l2);
 	
 	
 	SpotLight* l3 = new SpotLight(
@@ -101,7 +101,12 @@ int main() {
 
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
-		l2->shadowMap->visulizeDepthMap(Renderer::screen);
+
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
+
+		l1->shadow->visulizeDepthCubeMap(camera->view,camera->projection,Renderer::screen);
 	};
 
 	renderer.setAnimationLoop(animationLoop);

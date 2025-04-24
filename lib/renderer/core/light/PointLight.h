@@ -3,14 +3,18 @@
 #include "../shading/Shader.h"
 #include "../Renderer.h"
 #include "../geometry/SpheroidGeometry.h"
+#include "../shadow/OmnidirectionalShadow.h"
 
 
 class PointLight : public Light {
+public:
+	OmnidirectionalShadow* shadow;
+	vec3 position;
 	float radius;
 
-public:
 	PointLight(vec3 color , float intensity , float radius) :
 	radius(radius),
+	shadow(new OmnidirectionalShadow(radius)),
 	Light(color,intensity,new SpheroidGeometry(radius,radius,radius)) {}
 
 
@@ -18,12 +22,14 @@ public:
 		if (!geometeryPass) return;
 		worldMatrix = parentMatrix * getLocalMatrix();
 		Renderer::lighting.pointLights.push_back(this);
+
+		position = getWorldPosition();
     }
 
 
 	void bind(Shader *shader, vec3 &viewPos) {
 		Light::bind(shader, viewPos);
-		vec3 position = getWorldPosition();
+		
 		shader->setVec3("light.position", position);
 		shader->setFloat("light.radius", radius);
 		
@@ -36,6 +42,10 @@ public:
 		shader->setMat4("model", worldMatrix);
 		shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));
 		draw();
+	}
+
+	void updateShadow(Object3D* root) {
+		shadow->updateDepthCubeMap(position,root);
 	}
 
 };

@@ -6,12 +6,12 @@
 #include "../Renderer.h"
 #include "../geometry/BoxGeometry.h"
 #include "../../utility/helpers.h"
-#include "../shadow/DirectionalShadowMapping.h"
+#include "../shadow/DirectionalShadow.h"
 
 
 class RectAreaLight : public Light {
 public:
-	DirectionalShadowMapping* shadowMap;
+	DirectionalShadow* shadow;
 	mat3 directionMatrix;
 	vec3 rotation, position, axes[3];
 	float width , height , distance , halfSizes[3];
@@ -26,7 +26,7 @@ public:
 		float yaw = glm::pi<float>() + std::atan2(direction.x, direction.z);   // around Y
 		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
 		rotation = vec3(pitch, yaw, 0);
-		shadowMap = new DirectionalShadowMapping(800, 800, width, height, distance);
+		shadow = new DirectionalShadow(width, height, distance);
 	}
 
 
@@ -82,8 +82,8 @@ public:
 	}
 
 
-	void updateShadowMap(Object3D* root) {
-		shadowMap->updateDepthMap(position, axes[2], axes[1], root);
+	void updateShadow(Object3D* root) {
+		shadow->updateDepthMap(position, axes[2], axes[1], root);
 	}
 
 

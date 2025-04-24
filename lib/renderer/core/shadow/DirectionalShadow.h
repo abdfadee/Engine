@@ -13,27 +13,27 @@ using namespace std;
 using namespace glm;
 
 
-class DirectionalShadowMapping {
+class DirectionalShadow {
 public:
 	FrameBuffer fbo;
-	mat4 projection, lightMatrix;
+	mat4 projection;
 	bool perspective;
 
-	DirectionalShadowMapping(double width, double height, float frustumWidth, float frustumHeight, float frustumDepth) :
+	DirectionalShadow (float frustumWidth, float frustumHeight, float frustumDepth) :
 		perspective(false),
 		projection(ortho(-frustumWidth / 2.0f, frustumWidth / 2.0f, -frustumHeight / 2.0f, frustumHeight / 2.0f, 0.0f, frustumDepth)),
-		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
+		fbo(FrameBuffer(Renderer::width, Renderer::height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
-	DirectionalShadowMapping(double width, double height,float fov, float frustumDepth) :
+	DirectionalShadow(float fov, float frustumDepth) :
 		perspective(true),
-		projection(glm::perspective(fov, (float)(width / height), 0.001f, frustumDepth)),
-		fbo(FrameBuffer(width, height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
+		projection(glm::perspective(fov, (float)(Renderer::width / Renderer::height), 0.001f, frustumDepth)),
+		fbo(FrameBuffer(Renderer::width, Renderer::height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
 
 	void updateDepthMap(vec3 pos, vec3 direction, vec3 up ,Object3D* root) {
 		mat4 view = lookAt(pos, pos + direction, up);
-		lightMatrix = projection * view;
-		Shaders::DirectionalDepthMap->setMat4("spaceMatrix", lightMatrix);
+		mat4 lightMatrix = projection * view;
+		Shaders::DirectionalDepthMap->setMat4("viewProjectionMatrix", lightMatrix);
 		glCullFace(GL_FRONT);
 		fbo.bind();
 		root->render(Shaders::DirectionalDepthMap,mat4(1));
