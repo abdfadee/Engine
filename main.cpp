@@ -58,16 +58,16 @@ int main() {
 	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
-		25.0f,
+		100.0f,
 		15.0f
 	);
 	l1->translate(vec3(0,10,0));
-	space->add(l1);
+	//space->add(l1);
 	
 	
 	RectAreaLight* l2 = new RectAreaLight(
 		vec3(1.0f),
-		5.0f,
+		2.5f,
 		vec3(0,-1,0),
 		20,
 		20,
@@ -81,13 +81,14 @@ int main() {
 	SpotLight* l3 = new SpotLight(
 		vec3(1.0f),
 		90.0f,
-		vec3(0, -1, 0),
-		radians(45.0f),
-		radians(25.0f),
-		15.0f
+		radians(35.0f),
+		radians(15.0f),
+		40.0f
 	);
 	l3->translate(vec3(0, 10, 0));
-	//space->add(l3);
+	l3->rotate(vec3(radians(-90.0f),0,0));
+	l3->rotate(vec3(0, 0, radians(-30.0f)));
+	space->add(l3);
 
 
 	
@@ -102,11 +103,10 @@ int main() {
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
 
-		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_BLEND);
+		b->rotate(vec3(radians(0.5f), radians(0.5f), radians(0.5f)));
 
-		l1->shadow->visulizeDepthCubeMap(camera->view,camera->projection,Renderer::screen);
+		//l1->shadow->visulizeDepthCubeMap(camera->view,camera->projection);
+		//l3->shadow->visulizeDepthMap();
 	};
 
 	renderer.setAnimationLoop(animationLoop);

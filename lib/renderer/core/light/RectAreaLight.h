@@ -78,6 +78,12 @@ public:
 
 		shader->setMat4("model", worldMatrix);
 		shader->setMat3("normalMatrix", directionMatrix);
+
+		shader->setMat4("light.viewProjectionMatrix", shadow->viewProjectionMatrix);
+		shader->setInt("depthMap", 4);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, shadow->getDepthMap());
+
 		draw();
 	}
 

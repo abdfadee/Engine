@@ -16,6 +16,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
+uniform samplerCube depthCubeMap;
 
 out vec4 FragColor;
 
@@ -58,6 +59,37 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+// ----------------------------------------------------------------------------
+// array of offset direction for sampling
+vec3 gridSamplingDisk[20] = vec3[]
+(
+vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);  
+
+float shadowCalculation(vec3 fragPos)
+{
+    vec3 fragToLight = fragPos - light.position;
+    float currentDepth = length(fragToLight);
+
+    float shadow = 0.0;
+    float bias = 0.05;
+    float viewDistance = length(viewPos - fragPos);
+    float diskRadius = (1.0 + (viewDistance / light.radius)) / 200.0;
+    for(int i = 0; i < gridSamplingDisk.length(); ++i)
+    {
+        float closestDepth = texture(depthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= light.radius;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(gridSamplingDisk.length()); 
+    
+    return shadow;
 }
 
 
@@ -121,10 +153,11 @@ void main() {
     // add to outgoing radiance Lo
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
+    float illuminated = 1.0 - shadowCalculation(pos);
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
     vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
-    vec3 color = ambient + Lo;
+    vec3 color = ambient + Lo * illuminated;
     
     FragColor = vec4(color,1.0);
     //FragColor = vec4(texture(gNormal,TexCoords).xyz,1.0);

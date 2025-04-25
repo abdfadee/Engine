@@ -11,6 +11,9 @@ public:
 
 
 	void updateDepthMaps (Object3D* root) {
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(2.0f, 4.0f); // tweak these
+
 		Shaders::OmnidirectionalDepthMap->use();
 		for (int i = 0; i < pointLights.size(); ++i)
 			pointLights[i]->updateShadow(root);
@@ -22,6 +25,8 @@ public:
 
 		for (int i = 0; i < spotLights.size(); ++i)
 			spotLights[i]->updateShadow(root);
+
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 

@@ -29,7 +29,6 @@ public:
         RectAreaLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/RectAreaLight.frag");
         SpotLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/SpotLight.frag");
         AmbientLight = new Shader("lib/renderer/core/shading/shaders/Vertex/Light.vert", "lib/renderer/core/shading/shaders/Fragment/AmbientLight.frag");
-        
         DirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/DirectionalDepthMap.frag");
         OmnidirectionalDepthMap = new Shader("lib/renderer/core/shading/shaders/Vertex/DepthMap.vert", "lib/renderer/core/shading/shaders/Fragment/OmnidirectionalDepthMap.frag", "lib/renderer/core/shading/shaders/Geometry/Omnidirectional.geom");
         VisualizingDepth = new Shader("lib/renderer/core/shading/shaders/Vertex/PostProcessing.vert", "lib/renderer/core/shading/shaders/Fragment/VisualizingDepth.frag");

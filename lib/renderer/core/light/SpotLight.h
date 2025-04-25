@@ -15,7 +15,7 @@ class SpotLight : public Light{
 	vec3 rotation, position , direction , up;
 
 
-	SpotLight(vec3 color, float intensity, vec3 direction, float oc, float ic, float distance) :
+	SpotLight(vec3 color, float intensity, float oc, float ic, float distance) :
 		distance(distance), outerCutOff(cos(oc)), innerCutOff(cos(ic)),
 		Light(color, intensity, new ConeGeometry(distance * tan(oc), distance))
 	{
@@ -23,31 +23,24 @@ class SpotLight : public Light{
 		float cosTheta = cos(atan(baseRadius / distance));
 		cosTheta2 = cosTheta * cosTheta;
 
-		direction = normalize(direction);
-		float yaw = glm::pi<float>() + std::atan2(direction.x, direction.z);   // around Y
-		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
-		rotation = vec3(pitch, yaw, 0);
-
-		shadow = new DirectionalShadow(oc ,distance);
+		shadow = new DirectionalShadow(oc*2 ,distance);
 	}
 
 
 	void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
 		if (!geometeryPass) return;
-		
-		mat4 rotationMatrix = glm::rotate(mat4(1), rotation.x, vec3(1, 0, 0));
-		rotationMatrix = glm::rotate(rotationMatrix, rotation.y, vec3(0, 1, 0));
-
 		mat4 correctionMatix = glm::translate(mat4(1), vec3(0, 0, -distance));
 		correctionMatix = glm::rotate(correctionMatix, radians(90.0f), vec3(1, 0, 0));
 		
-		mat4 originalMatrix = parentMatrix * getLocalMatrix() * rotationMatrix;
+		mat4 originalMatrix = parentMatrix * getLocalMatrix();
 		worldMatrix = originalMatrix * correctionMatix;
 
 		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
 		directionMatrix = transpose(inverse(mat3(worldMatrix)));
 		direction = normalize(directionMatrix * vec3(0, -1, 0));
 		up = normalize(directionMatrix * vec3(0, 0, -1));
+
+		cout << direction << endl;
 
 		Renderer::lighting.spotLights.push_back(this);
 	}
@@ -80,6 +73,13 @@ class SpotLight : public Light{
 		shader->setFloat("light.outerCutOff", outerCutOff);
 
 		shader->setMat4("model", worldMatrix);
+
+		shader->setMat4("light.viewProjectionMatrix", shadow->viewProjectionMatrix);
+		shader->setInt("depthMap", 4);
+		shader->setFloat("bias",shadow->bias);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, shadow->getDepthMap());
+
 		draw();
 	}
 

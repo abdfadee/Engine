@@ -41,6 +41,11 @@ public:
 		
 		shader->setMat4("model", worldMatrix);
 		shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));
+
+		shader->setInt("depthCubeMap", 4);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, shadow->getDepthCubeMap());
+
 		draw();
 	}
 

@@ -89,8 +89,9 @@ void main() {
     vec3 tangentDisplacement = vec3(0.0, 0.0, -parallaxHeight);  // Negative because heightmap is "1" at peaks
     vec3 worldDisplacement = fs_in.TBN * tangentDisplacement;
     FragPosition = fs_in.FragPos + worldDisplacement;
-    vec4 clip = viewProjectionMatrix * vec4(FragPosition,1.0);
-    gl_FragDepth = (clip.z / clip.w);
+    
+    //vec4 clip = viewProjectionMatrix * vec4(FragPosition,1.0);
+    //gl_FragDepth = (clip.z / clip.w);
 
     FragColor = color + texture(albedoMap, TexCoords).xyz;
 

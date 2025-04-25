@@ -3,6 +3,7 @@
 const float PI = 3.14159265359;
 
 struct Light {
+    mat4 viewProjectionMatrix;
     vec3 position;
     vec3 direction;
     float distance;
@@ -15,11 +16,13 @@ struct Light {
 uniform Light light;
 uniform vec3 viewPos;
 uniform vec2 pixelSize;
+uniform float bias;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
+uniform sampler2D depthMap;
 
 out vec4 FragColor;
 
@@ -62,6 +65,34 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+// ----------------------------------------------------------------------------
+float shadowCalculation(vec3 fragPos,vec3 normal,vec3 lightDir)
+{
+    vec4 fragmentPositionLightSpace = light.viewProjectionMatrix * vec4(fragPos,1.0);
+    vec3 projCoords = fragmentPositionLightSpace.xyz / fragmentPositionLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // Oversampling
+    if (projCoords.z > 1.0) {return 0.0;}
+
+    float currentDepth = projCoords.z;
+
+    // Shadow Acne
+    float bias = max(bias * (1.0 - dot(normal, lightDir)), bias/10);  
+
+    // PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
+    for(int x = -1; x <= 1; ++x)
+        for(int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+            }  
+    shadow /= 9.0;
+
+    return shadow;
 }
 
 
@@ -133,14 +164,16 @@ void main() {
 
     // add to outgoing radiance Lo
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    
+
     // spotlight (soft edges)
     float theta = dot(L, normalize(-light.direction)); 
     float epsilon = (light.innerCutOff - light.outerCutOff);
     float i = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 
+    float illuminated = 1.0 - shadowCalculation(pos,N,L);
+
     vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
-    vec3 color = i * (ambient + Lo);
+    vec3 color = i * (ambient + Lo * illuminated);
     
     FragColor = vec4(color,1.0);
     //FragColor = vec4(i);

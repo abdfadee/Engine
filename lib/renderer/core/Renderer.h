@@ -11,6 +11,7 @@
 #include "../utility/Controls.h"
 #include "framebuffer/FrameBuffer.h"
 #include "geometry/RectangleGeometry.h"
+#include "geometry/BoxGeometry.h"
 #include "light/Lighting.h"
 
 using namespace std;
@@ -23,7 +24,7 @@ public:
 	double deltaTime, currentFrameTime, lastFrameTime;
 
 	inline static GLuint width, height;
-	inline static Mesh* screen;
+	inline static Mesh* screen , *unitBox;
 	inline static Lighting lighting;
 	
 
@@ -41,6 +42,8 @@ public:
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Material Buffer 
 			//{GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER}	// Depth Buffer
 		});
+
+		unitBox = new Mesh(new BoxGeometry(2,2,2));
 		screen = new Mesh(new RectangleGeometry(2, 2));
 
 		glViewport(0, 0, width, height);

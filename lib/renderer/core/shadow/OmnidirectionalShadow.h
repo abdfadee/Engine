@@ -51,22 +51,24 @@ public:
 	}
 
 
-	void visulizeDepthCubeMap(mat4 view , mat4 projection ,Object3D* screen) {
+	void visulizeDepthCubeMap(mat4 view , mat4 projection) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
 
 		mat4 mviewProjectionMatrix = projection * mat4(mat3(view));
 
 		Shaders::Skybox->use();
 		Shaders::Skybox->setMat4("mviewProjectionMatrix", mviewProjectionMatrix);
-		Shaders::Skybox->setMat4("model", mat4(1));
 
 		Shaders::Skybox->setInt("cube", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, getDepthCubeMap());
 
-		screen->render(Shaders::VisualizingDepth, mat4(1));
+		Renderer::unitBox->render(Shaders::Skybox);
 	}
 
 	GLuint getDepthCubeMap() {
