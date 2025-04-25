@@ -2,8 +2,8 @@
 
 #include <glad/glad.h>
 #include "Object3d.h"
-#include "../Material.h"
-#include "../Geometry.h"
+#include "Material.h"
+#include "Geometry.h"
 
 
 class Mesh : public Object3D {

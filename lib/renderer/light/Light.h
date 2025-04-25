@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "../3d/Mesh.h"
+#include "../core/Mesh.h"
 
 using namespace glm;
 

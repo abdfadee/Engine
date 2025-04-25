@@ -11,6 +11,7 @@ struct Light {
 uniform Light light;
 uniform vec3 viewPos;
 uniform vec2 pixelSize;
+uniform float bias;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -71,13 +72,15 @@ vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
 vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );  
 
-float shadowCalculation(vec3 fragPos)
+float shadowCalculation(vec3 fragPos,vec3 normal,vec3 lightDir)
 {
     vec3 fragToLight = fragPos - light.position;
     float currentDepth = length(fragToLight);
 
     float shadow = 0.0;
-    float bias = 0.05;
+
+    float bias = max(bias * (1.0 - dot(normal, normalize(lightDir))), bias/10);
+
     float viewDistance = length(viewPos - fragPos);
     float diskRadius = (1.0 + (viewDistance / light.radius)) / 200.0;
     for(int i = 0; i < gridSamplingDisk.length(); ++i)
@@ -153,7 +156,7 @@ void main() {
     // add to outgoing radiance Lo
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-    float illuminated = 1.0 - shadowCalculation(pos);
+    float illuminated = 1.0 - shadowCalculation(pos,N,L);
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
     vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );

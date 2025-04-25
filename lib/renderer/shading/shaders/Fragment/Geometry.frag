@@ -75,6 +75,7 @@ void main() {
     vec2 TexCoords = fs_in.TexCoords;
     if (heightScale > 0.0) {
         TexCoords = RaymarchedParallaxMapping(fs_in.TexCoords,normalize(transpose(fs_in.TBN) * viewDir));
+    
         if(TexCoords.x > uvMultiplier.x || TexCoords.y > uvMultiplier.y || TexCoords.x < 0.0 || TexCoords.y < 0.0)
         discard;
 

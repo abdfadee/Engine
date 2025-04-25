@@ -17,12 +17,12 @@ using namespace glm;
 class OmnidirectionalShadow {
 public:
 	FrameBuffer fbo;
-	float frustumDepth;
+	float frustumDepth , bias;
 	mat4 projection, viewProjectionMatrices[6];
 
-	OmnidirectionalShadow (float frustumDepth) :
+	OmnidirectionalShadow (float frustumDepth,float bias = 1.0f) :
 		fbo(FrameBuffer(Renderer::width, Renderer::height, 0, { {GL_DEPTH_COMPONENT24 ,GL_NEAREST ,GL_CLAMP_TO_BORDER,true} }, true)),
-		frustumDepth(frustumDepth),
+		frustumDepth(frustumDepth), bias(bias),
 		projection(perspective(radians(90.0f), (float)Renderer::width / (float)Renderer::height, 0.01f, frustumDepth)) {
 	}
 

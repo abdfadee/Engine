@@ -3,15 +3,15 @@
 #include <thread>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "lib/renderer/core/initiliaze.h"
-#include "lib/renderer/core/renderer.h"
-#include "lib/renderer/core/view/PerspectiveCamera.h"
-#include "lib/renderer/core/geometry/BoxGeometry.h"
-#include "lib/renderer/core/geometry/ConeGeometry.h"
-#include "lib/renderer/core/texture/Texture.h"
-#include "lib/renderer/core/light/PointLight.h"
-#include "lib/renderer/core/light/RectAreaLight.h"
-#include "lib/renderer/core/light/SpotLight.h"
+#include "lib/renderer/initiliaze.h"
+#include "lib/renderer/renderer.h"
+#include "lib/renderer/view/PerspectiveCamera.h"
+#include "lib/renderer/geometry/BoxGeometry.h"
+#include "lib/renderer/geometry/ConeGeometry.h"
+#include "lib/renderer/texture/Texture.h"
+#include "lib/renderer/light/PointLight.h"
+#include "lib/renderer/light/RectAreaLight.h"
+#include "lib/renderer/light/SpotLight.h"
 
 
 
@@ -48,46 +48,47 @@ int main() {
 	space->add(floor);
 
 
-	Mesh* b = new Mesh{
+	Mesh* b1 = new Mesh{
 		new BoxGeometry{1,1,1},
 		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
 	};
-	b->translate(vec3(0,5,0));
-	space->add(b);
+	b1->translate(vec3(0,1.25,0));
+	space->add(b1);
 
 	
+
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
 		100.0f,
 		15.0f
 	);
 	l1->translate(vec3(0,10,0));
-	//space->add(l1);
+	space->add(l1);
 	
 	
 	RectAreaLight* l2 = new RectAreaLight(
 		vec3(1.0f),
-		2.5f,
-		vec3(0,-1,0),
+		1.0f,
 		20,
 		20,
 		20,
 		true
 	);
 	l2->translate(vec3(0, 10, 0));
-	//space->add(l2);
+	l2->rotate(vec3(radians(-90.0f), 0, 0));
+	space->add(l2);
 	
 	
 	SpotLight* l3 = new SpotLight(
 		vec3(1.0f),
-		90.0f,
+		100.0f,
 		radians(35.0f),
 		radians(15.0f),
 		40.0f
 	);
 	l3->translate(vec3(0, 10, 0));
 	l3->rotate(vec3(radians(-90.0f),0,0));
-	l3->rotate(vec3(0, 0, radians(-30.0f)));
+	//l3->rotate(vec3(0, 0, radians(-30.0f)));
 	space->add(l3);
 
 
@@ -103,7 +104,7 @@ int main() {
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
 
-		b->rotate(vec3(radians(0.5f), radians(0.5f), radians(0.5f)));
+		b1->rotate(vec3(radians(0.5f), radians(0.5f), radians(0.5f)));
 
 		//l1->shadow->visulizeDepthCubeMap(camera->view,camera->projection);
 		//l3->shadow->visulizeDepthMap();

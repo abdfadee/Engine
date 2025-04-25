@@ -4,11 +4,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Initiliaze.h"
-#include "3d/Object3d.h"
-#include "3d/Mesh.h"
+#include "core/Mesh.h";
 #include "view/Camera.h"
 #include "shading/shaders/Shaders.h"
-#include "../utility/Controls.h"
+#include "utility/Controls.h"
 #include "framebuffer/FrameBuffer.h"
 #include "geometry/RectangleGeometry.h"
 #include "geometry/BoxGeometry.h"
@@ -82,6 +81,7 @@ public:
 
 
 		// Light Pass
+		glViewport(0,0,width,height);
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);

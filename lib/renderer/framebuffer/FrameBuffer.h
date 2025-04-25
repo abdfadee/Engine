@@ -13,10 +13,10 @@ public:
 	GLint internalFormat;
 	GLint filterOptions;
 	GLint wrapOptions;
+	GLint multiSample;
 	bool multiFace;
-
-	Buffer(GLint internalFormat, GLint filterOptions, GLint wrapOptions,bool multiFace = false)
-		: internalFormat(internalFormat), filterOptions(filterOptions), wrapOptions(wrapOptions) , multiFace(multiFace) {}
+	Buffer(GLint internalFormat, GLint filterOptions, GLint wrapOptions,bool multiFace = false, GLint multiSample = 1)
+		: internalFormat(internalFormat), filterOptions(filterOptions), wrapOptions(wrapOptions) , multiFace(multiFace) , multiSample(multiSample) {}
 };
 
 
@@ -49,7 +49,6 @@ public:
 			GLenum format, type , attachment;
 			GetBaseFormatTypeAndAttachment(bufferConfigs[i].internalFormat, format, type,attachment);
 
-			GLenum target;
 			if (bufferConfigs[i].multiFace) {
 				glBindTexture(GL_TEXTURE_CUBE_MAP, buffers[i]);
 				for (int j = 0; j < 6; j++)
@@ -62,14 +61,26 @@ public:
 					glFramebufferTexture(GL_FRAMEBUFFER, attachment, buffers[i], 0);
 			}
 			else {
-				glBindTexture(GL_TEXTURE_2D, buffers[i]);
-				glTexImage2D(GL_TEXTURE_2D, 0, bufferConfigs[i].internalFormat, width, height, 0, format, type, nullptr);
-				setFilterOptions(GL_TEXTURE_2D, bufferConfigs[i]);
-				glBindTexture(GL_TEXTURE_2D, 0);
-				if (attachment == GL_COLOR_ATTACHMENT0)
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex++, GL_TEXTURE_2D, buffers[i], 0);
-				else
-					glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, buffers[i], 0);
+				if (bufferConfigs[i].multiSample > 1) {
+					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffers[i]);
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, bufferConfigs[i].multiSample, bufferConfigs[i].internalFormat, width, height, GL_TRUE);
+					setFilterOptions(GL_TEXTURE_2D_MULTISAMPLE, bufferConfigs[i]);
+					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+					if (attachment == GL_COLOR_ATTACHMENT0)
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex++, GL_TEXTURE_2D_MULTISAMPLE, buffers[i], 0);
+					else
+						glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, buffers[i], 0);
+				}
+				else {
+					glBindTexture(GL_TEXTURE_2D, buffers[i]);
+					glTexImage2D(GL_TEXTURE_2D, 0, bufferConfigs[i].internalFormat, width, height, 0, format, type, nullptr);
+					setFilterOptions(GL_TEXTURE_2D, bufferConfigs[i]);
+					glBindTexture(GL_TEXTURE_2D, 0);
+					if (attachment == GL_COLOR_ATTACHMENT0)
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex++, GL_TEXTURE_2D, buffers[i], 0);
+					else
+						glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, buffers[i], 0);
+				}
 			}
 			
 		}

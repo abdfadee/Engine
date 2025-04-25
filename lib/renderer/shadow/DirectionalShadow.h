@@ -6,7 +6,7 @@
 #include "../framebuffer/FrameBuffer.h"
 #include "../shading/Shader.h"
 #include "../shading/shaders/Shaders.h"
-#include "../3d/Object3d.h"
+#include "../core/Object3d.h";
 
 
 using namespace std;
@@ -21,12 +21,12 @@ public:
 	bool perspective;
 
 	DirectionalShadow (float frustumWidth, float frustumHeight, float frustumDepth) :
-		perspective(false),
+		perspective(false), bias(0.005),
 		projection(ortho(-frustumWidth / 2.0f, frustumWidth / 2.0f, -frustumHeight / 2.0f, frustumHeight / 2.0f, 0.0f, frustumDepth)),
-		fbo(FrameBuffer(Renderer::width/2, Renderer::height/2, 0, { {GL_DEPTH_COMPONENT16,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
+		fbo(FrameBuffer(Renderer::width, Renderer::height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 
 	DirectionalShadow(float fov, float frustumDepth) :
-		perspective(true), bias(0.00005),
+		perspective(true), bias(0.000005),
 		projection(glm::perspective(fov, (float)(Renderer::width / Renderer::height), 0.001f, frustumDepth)),
 		fbo(FrameBuffer(Renderer::width, Renderer::height, 0, { {GL_DEPTH_COMPONENT24,GL_NEAREST,GL_CLAMP_TO_BORDER} }, true)) {}
 

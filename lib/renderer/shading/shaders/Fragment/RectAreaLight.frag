@@ -15,6 +15,7 @@ struct Light {
 uniform Light light;
 uniform vec3 viewPos;
 uniform vec2 pixelSize;
+uniform float bias;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -77,7 +78,7 @@ float shadowCalculation(vec3 fragPos,vec3 normal)
     float currentDepth = projCoords.z;
 
     // Shadow Acne
-    float bias = max(0.05 * (1.0 - dot(normal, light.axes[2])), 0.005);  
+    float bias = max(bias * (1.0 - dot(normal, light.axes[2])), bias/10);  
 
     // PCF
     float shadow = 0.0;

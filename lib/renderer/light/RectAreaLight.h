@@ -5,7 +5,7 @@
 #include "../shading/Shader.h"
 #include "../Renderer.h"
 #include "../geometry/BoxGeometry.h"
-#include "../../utility/helpers.h"
+#include "../utility/helpers.h"
 #include "../shadow/DirectionalShadow.h"
 
 
@@ -13,35 +13,28 @@ class RectAreaLight : public Light {
 public:
 	DirectionalShadow* shadow;
 	mat3 directionMatrix;
-	vec3 rotation, position, axes[3];
+	vec3 position, axes[3];
 	float width , height , distance , halfSizes[3];
 	bool unified;
 
-	RectAreaLight(vec3 color, float intensity , vec3 direction , float width , float height , float distance , bool unified = true) :
+	RectAreaLight(vec3 color, float intensity , float width , float height , float distance , bool unified = true) :
 		unified(unified),
 		width(width), height(height), distance(distance),
 		Light(color, intensity , new BoxGeometry(width,height,distance) ) {
 		halfSizes[0] = width / 2; halfSizes[1] = height / 2; halfSizes[2] = distance / 2;
-		direction = normalize(direction);
-		float yaw = glm::pi<float>() + std::atan2(direction.x, direction.z);   // around Y
-		float pitch = std::atan2(-direction.y, std::sqrt(direction.x * direction.x + direction.z * direction.z)); // around X
-		rotation = vec3(pitch, yaw, 0);
 		shadow = new DirectionalShadow(width, height, distance);
 	}
 
 
 	void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
 		if (!geometeryPass) return;
-		
-		mat4 rotationMatrix = glm::rotate(mat4(1), rotation.x, vec3(1, 0, 0));
-		rotationMatrix = glm::rotate(rotationMatrix, rotation.y, vec3(0, 1, 0));
 
 		mat4 correctionMatrix = glm::translate(mat4(1), vec3(0, 0, -distance / 2));
 
-		mat4 originalMatrix = parentMatrix * getLocalMatrix() * rotationMatrix;
-		worldMatrix = originalMatrix * correctionMatrix;
+		worldMatrix = parentMatrix * getLocalMatrix();
+		position = vec3(worldMatrix * vec4(0, 0, 0, 1));
 
-		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
+		worldMatrix = worldMatrix * correctionMatrix;
 		directionMatrix = transpose(inverse(mat3(worldMatrix)));
 		axes[0] = normalize(directionMatrix * vec3(1, 0, 0));
 		axes[1] = normalize(directionMatrix * vec3(0, 1, 0));
@@ -81,6 +74,7 @@ public:
 
 		shader->setMat4("light.viewProjectionMatrix", shadow->viewProjectionMatrix);
 		shader->setInt("depthMap", 4);
+		shader->setFloat("bias", shadow->bias);
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, shadow->getDepthMap());
 

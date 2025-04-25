@@ -3,7 +3,7 @@
 #include "../shading/Shader.h"
 #include "../Renderer.h"
 #include "../geometry/ConeGeometry.h"
-#include "../../utility/helpers.h"
+#include "../utility/helpers.h"
 #include "../shadow/DirectionalShadow.h"
 
 
@@ -12,7 +12,7 @@ class SpotLight : public Light{
 	DirectionalShadow* shadow;
 	mat3 directionMatrix;
 	float innerCutOff, outerCutOff, distance , cosTheta2;
-	vec3 rotation, position , direction , up;
+	vec3 position , direction , up;
 
 
 	SpotLight(vec3 color, float intensity, float oc, float ic, float distance) :
@@ -32,15 +32,13 @@ class SpotLight : public Light{
 		mat4 correctionMatix = glm::translate(mat4(1), vec3(0, 0, -distance));
 		correctionMatix = glm::rotate(correctionMatix, radians(90.0f), vec3(1, 0, 0));
 		
-		mat4 originalMatrix = parentMatrix * getLocalMatrix();
-		worldMatrix = originalMatrix * correctionMatix;
+		worldMatrix = parentMatrix * getLocalMatrix();
+		position = vec3(worldMatrix * vec4(0, 0, 0, 1));
 
-		position = vec3(originalMatrix * vec4(0, 0, 0, 1));
+		worldMatrix = worldMatrix * correctionMatix;
 		directionMatrix = transpose(inverse(mat3(worldMatrix)));
 		direction = normalize(directionMatrix * vec3(0, -1, 0));
 		up = normalize(directionMatrix * vec3(0, 0, -1));
-
-		cout << direction << endl;
 
 		Renderer::lighting.spotLights.push_back(this);
 	}

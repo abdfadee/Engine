@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "../Geometry.h"
+#include "../core/Geometry.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <vector>

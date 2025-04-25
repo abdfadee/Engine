@@ -5,10 +5,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 #include <cmath>
-#include "../3d/Object3d.h";
+#include "../core/Object3d.h";
 #include "../shading/shaders/Shaders.h"
 #include "../shading/UBO.h";
-#include "../../utility/Controls.h"
+#include "../utility/Controls.h"
 
 
 using namespace glm;

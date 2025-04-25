@@ -11,6 +11,8 @@ public:
 
 
 	void updateDepthMaps (Object3D* root) {
+		glEnable(GL_MULTISAMPLE);
+
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(2.0f, 4.0f); // tweak these
 
@@ -27,6 +29,7 @@ public:
 			spotLights[i]->updateShadow(root);
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
+		glDisable(GL_MULTISAMPLE);
 	}
 
 
