@@ -76,8 +76,8 @@ void main() {
     if (heightScale > 0.0) {
         TexCoords = RaymarchedParallaxMapping(fs_in.TexCoords,normalize(transpose(fs_in.TBN) * viewDir));
     
-        if(TexCoords.x > uvMultiplier.x || TexCoords.y > uvMultiplier.y || TexCoords.x < 0.0 || TexCoords.y < 0.0)
-        discard;
+        //if(TexCoords.x > uvMultiplier.x || TexCoords.y > uvMultiplier.y || TexCoords.x < 0.0 || TexCoords.y < 0.0)
+        //discard;
 
         vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
         FragNormal = normalize(fs_in.TBN * tangentNormal);

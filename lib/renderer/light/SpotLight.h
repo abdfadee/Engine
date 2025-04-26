@@ -40,7 +40,7 @@ class SpotLight : public Light{
 		direction = normalize(directionMatrix * vec3(0, -1, 0));
 		up = normalize(directionMatrix * vec3(0, 0, -1));
 
-		Renderer::lighting.spotLights.push_back(this);
+		Renderer::lighting->spotLights.push_back(this);
 	}
 
 

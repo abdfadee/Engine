@@ -21,7 +21,7 @@ public:
     virtual void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
 		if (!geometeryPass) return;
 		worldMatrix = parentMatrix * getLocalMatrix();
-		Renderer::lighting.pointLights.push_back(this);
+		Renderer::lighting->pointLights.push_back(this);
 
 		position = getWorldPosition();
     }

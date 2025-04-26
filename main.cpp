@@ -21,13 +21,13 @@ int main() {
 	Controls::initiliaze(window);
 
 
-	Texture* t = new Texture{"assets/2D/brickwall.jpg"};
+	Texture* t = Texture::T_2D("assets/2D/brickwall.jpg");
 
-	Texture* albedo = new Texture{"assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" };
-	Texture* normal = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_NormalGL.jpg" };
-	Texture* displacment = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Displacement.jpg"};
-	Texture* roughness = new Texture{ "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg" };
-	Texture* metallic = new Texture{ "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg" };
+	Texture* albedo = Texture::T_2D("assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" ,true);
+	Texture* normal = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_NormalGL.jpg");
+	Texture* displacment = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Displacement.jpg");
+	Texture* roughness = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg");
+	Texture* metallic = Texture::T_2D( "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg");
 
 	float uRepeat = 3.0f , vRepeat = 3.0f;
 	albedo->repeat(uRepeat, vRepeat);
@@ -35,6 +35,16 @@ int main() {
 	displacment->repeat(uRepeat, vRepeat);
 	roughness->repeat(uRepeat, vRepeat);
 	metallic->repeat(uRepeat, vRepeat);
+
+
+
+	Texture* albedo2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Color.jpg", true);
+	Texture* normal2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_NormalGL.jpg");
+	Texture* displacment2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Displacement.jpg");
+	Texture* roughness2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Roughness.jpg");
+	Texture* metallic2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Metalness.jpg");
+
+
 
 	Object3D* space = new Object3D{};
 
@@ -49,8 +59,8 @@ int main() {
 
 
 	Mesh* b1 = new Mesh{
-		new BoxGeometry{1,1,1},
-		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
+		new SpheroidGeometry{1,1,1},
+		new Material{albedo2,roughness2,metallic2,normal2,displacment2,0.125f}
 	};
 	b1->translate(vec3(0,1.25,0));
 	space->add(b1);
@@ -60,10 +70,10 @@ int main() {
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
 		100.0f,
-		15.0f
+		25.0f
 	);
 	l1->translate(vec3(0,10,0));
-	space->add(l1);
+	//space->add(l1);
 	
 	
 	RectAreaLight* l2 = new RectAreaLight(
@@ -76,12 +86,12 @@ int main() {
 	);
 	l2->translate(vec3(0, 10, 0));
 	l2->rotate(vec3(radians(-90.0f), 0, 0));
-	space->add(l2);
+	//space->add(l2);
 	
 	
 	SpotLight* l3 = new SpotLight(
 		vec3(1.0f),
-		100.0f,
+		50.0f,
 		radians(35.0f),
 		radians(15.0f),
 		40.0f
@@ -92,22 +102,37 @@ int main() {
 	space->add(l3);
 
 
-	
-
-
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
 	camera->translate(vec3(0,5,5));
 	//space->add(camera);
 
 
+	Renderer::lighting->ibl->generateMaps(Texture::T_HDRI("assets/HDRI/container_free_Ref.hdr"));
+
+
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
+		//b1->rotate(vec3(radians(0.5f), radians(0.5f), radians(0.5f)));
 
-		b1->rotate(vec3(radians(0.5f), radians(0.5f), radians(0.5f)));
 
-		//l1->shadow->visulizeDepthCubeMap(camera->view,camera->projection);
-		//l3->shadow->visulizeDepthMap();
+		/*
+		glViewport(0, 0, 800, 800);
+		camera->updateViewProjectionMatrix();
+
+		Shaders::Skybox->use();
+		Shaders::Skybox->setMat4("mviewProjectionMatrix",camera->projection * mat4(mat3(camera->view)));
+		Shaders::Skybox->setInt("cube", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, maps[2]);
+		Shaders::unitBox->render(Shaders::Skybox);
+
+		Shaders::PostProcessing->use();
+		Shaders::PostProcessing->setInt("buffer", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, maps[2]);
+		Shaders::screen->render(Shaders::PostProcessing);
+		*/
 	};
 
 	renderer.setAnimationLoop(animationLoop);

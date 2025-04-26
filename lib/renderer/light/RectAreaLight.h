@@ -40,7 +40,7 @@ public:
 		axes[1] = normalize(directionMatrix * vec3(0, 1, 0));
 		axes[2] = normalize(directionMatrix * vec3(0, 0, -1));
 
-		Renderer::lighting.rectAreaLights.push_back(this);
+		Renderer::lighting->rectAreaLights.push_back(this);
 	}
 
 

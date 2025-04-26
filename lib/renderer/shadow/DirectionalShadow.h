@@ -5,7 +5,7 @@
 #include <iostream>
 #include "../framebuffer/FrameBuffer.h"
 #include "../shading/Shader.h"
-#include "../shading/shaders/Shaders.h"
+#include "../shading/Shaders.h"
 #include "../core/Object3d.h";
 
 
@@ -57,7 +57,7 @@ public:
 		Shaders::VisualizingDepth->setFloat("zfar", 100.0f);
 		Shaders::VisualizingDepth->setBool("perspective",perspective);
 
-		Renderer::screen->render(Shaders::VisualizingDepth);
+		Shaders::screen->render(Shaders::VisualizingDepth);
 	}
 
 

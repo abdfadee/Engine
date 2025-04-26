@@ -6,7 +6,7 @@
 #include <glm/gtc/constants.hpp>
 #include <cmath>
 #include "../core/Object3d.h";
-#include "../shading/shaders/Shaders.h"
+#include "../shading/Shaders.h"
 #include "../shading/UBO.h";
 #include "../utility/Controls.h"
 

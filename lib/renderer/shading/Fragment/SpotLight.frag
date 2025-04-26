@@ -176,5 +176,5 @@ void main() {
     vec3 color = i * (ambient + Lo * illuminated);
     
     FragColor = vec4(color,1.0);
-    //FragColor = vec4(i);
+    //FragColor = vec4(1);
 }

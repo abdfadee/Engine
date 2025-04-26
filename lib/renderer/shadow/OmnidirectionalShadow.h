@@ -6,7 +6,7 @@
 #include <iostream>
 #include "../framebuffer/FrameBuffer.h"
 #include "../shading/Shader.h"
-#include "../shading/shaders/Shaders.h"
+#include "../shading/Shaders.h"
 #include "../Renderer.h"
 
 
@@ -68,7 +68,7 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, getDepthCubeMap());
 
-		Renderer::unitBox->render(Shaders::Skybox);
+		Shaders::unitBox->render(Shaders::Skybox);
 	}
 
 	GLuint getDepthCubeMap() {
