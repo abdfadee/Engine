@@ -10,7 +10,7 @@ layout(std140) uniform View {
 };
 uniform mat4 model;
 uniform mat3 normalMatrix;
-uniform vec2 uvMultiplier;
+uniform vec2 uvMultiplier = vec2(1.0);
 
 out FS_IN {
     vec3 FragPos;

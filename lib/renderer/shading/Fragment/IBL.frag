@@ -26,7 +26,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 void main() {
     // Reconstructing World Coordinantes
     vec3 pos = vec3(texture(gPosition , TexCoords));
-
+    
     if (pos == vec3(0)) {
         FragColor = vec4(vec3(texture(gAlbedo,TexCoords)),1.0);
         return;
@@ -67,5 +67,7 @@ void main() {
     vec3 ambient = (kD * diffuse + specular);
     
     FragColor = vec4(ambient,1.0); 
-    //FragColor = vec4(irradiance,1.0); 
+    FragColor = vec4(diffuse,1.0); 
+    //FragColor = vec4(texture(prefilterMap, N).rgb,1.0); 
+    //FragColor = vec4(texture(brdfLUT, TexCoords).rgb,1.0); 
 }

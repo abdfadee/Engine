@@ -10,7 +10,7 @@ class IBL {
     unsigned int captureFBO, captureRBO;
     glm::mat4 viewProjectionMatrix[6];
 
-    GLuint HDRToEnv(GLuint hdrTexture, GLuint width = 512, GLuint height = 512) {
+    GLuint HDRToEnv(GLuint hdrTexture, GLuint width = 2000, GLuint height = 2000) {
         // pbr: setup cubemap to render to and attach to framebuffer
         // ---------------------------------------------------------
         unsigned int envCubemap;

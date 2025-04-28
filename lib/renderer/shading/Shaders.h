@@ -28,7 +28,8 @@ public:
         *IrradianceConvolution,
         *HDRPrefilter,
         *BRDF,
-        *IBL;
+        *IBL,
+        *GLTFGeometery;
 
 
     inline static Mesh* screen, * unitBox;
@@ -39,6 +40,7 @@ public:
         Basic = new Shader("lib/renderer/shading/Vertex/Basic.vert", "lib/renderer/shading/Fragment/Basic.frag");
 
         Geometry = new Shader("lib/renderer/shading/Vertex/Geometry.vert", "lib/renderer/shading/Fragment/Geometry.frag");
+        GLTFGeometery = new Shader("lib/renderer/shading/Vertex/Geometry.vert", "lib/renderer/shading/Fragment/GLTFGeometery.frag");
 
         PointLight = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/PointLight.frag");
         RectAreaLight = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/RectAreaLight.frag");

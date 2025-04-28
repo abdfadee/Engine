@@ -9,6 +9,8 @@
 #include "utility/Controls.h"
 #include "framebuffer/FrameBuffer.h"
 #include "light/Lighting.h"
+#include "lib/renderer/model/Model.h";
+
 
 using namespace std;
 
@@ -21,6 +23,8 @@ public:
 
 	inline static GLuint width, height;
 	inline static Lighting* lighting;
+
+	Model* model;
 	
 
 public:
@@ -43,6 +47,9 @@ public:
 
 		lighting = new Lighting(width, height);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+		model = new Model("assets/models/helmet/DamagedHelmet.gltf",false);
 	}
 
 
@@ -57,8 +64,6 @@ public:
 
 
 		// SkyBox
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
 		Shaders::Skybox->use();
 		Shaders::Skybox->setMat4("mviewProjectionMatrix", camera->projection * mat4(mat3(camera->view)));
 		Shaders::Skybox->setInt("cube", 0);
@@ -67,7 +72,7 @@ public:
 		Shaders::unitBox->render(Shaders::Skybox);
 
 
-		glDepthFunc(GL_LESS);
+		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		Shaders::Geometry->use();
@@ -81,8 +86,15 @@ public:
 
 		root->render(Shaders::Geometry,mat4(1.0f),true,true);
 
+		
+		Shaders::GLTFGeometery->use();
+		mat4 matrix = translate(mat4(1), vec3(0, 5, 0))  * rotate(mat4(1),radians(90.0f),vec3(1,0,0));
+		Shaders::GLTFGeometery->setMat4("model",matrix);
+		Shaders::GLTFGeometery->setMat4("normalMatrix", transpose(inverse(mat3(matrix))));
+		model->Draw(Shaders::GLTFGeometery);
+		
 
-
+		
 		// Shadow Pass
 		lighting->updateDepthMaps(root);
 
@@ -124,7 +136,6 @@ public:
 		Shaders::Basic->setMat4("viewProjectionMatrix", viewProjectionMatrix);
 		root->render(Shaders::Basic);
 		*/
-
 	}
 
 

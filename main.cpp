@@ -29,7 +29,7 @@ int main() {
 	Texture* roughness = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg");
 	Texture* metallic = Texture::T_2D( "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg");
 
-	float uRepeat = 3.0f , vRepeat = 3.0f;
+	float uRepeat = 30.0f , vRepeat = 30.0f;
 	albedo->repeat(uRepeat, vRepeat);
 	normal->repeat(uRepeat, vRepeat);
 	displacment->repeat(uRepeat, vRepeat);
@@ -38,32 +38,15 @@ int main() {
 
 
 
-	Texture* albedo2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Color.jpg", true);
-	Texture* normal2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_NormalGL.jpg");
-	Texture* displacment2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Displacement.jpg");
-	Texture* roughness2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Roughness.jpg");
-	Texture* metallic2 = Texture::T_2D("assets/PBR/Metal/Metal049A_2K-JPG_Metalness.jpg");
-
-
-
 	Object3D* space = new Object3D{};
 
 
 	Mesh* floor = new Mesh{
-		new BoxGeometry{10,10,0.05},
-		//new Material{vec3(1.0f,0,0),0.5f,1.0f,0.0f}
+		new BoxGeometry{100,100,0.05},
 		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
 	};
 	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
-
-
-	Mesh* b1 = new Mesh{
-		new SpheroidGeometry{1,1,1},
-		new Material{albedo2,roughness2,metallic2,normal2,displacment2,0.125f}
-	};
-	b1->translate(vec3(0,1.25,0));
-	space->add(b1);
 
 	
 
@@ -108,12 +91,11 @@ int main() {
 	//space->add(camera);
 
 
-	Renderer::lighting->ibl->generateMaps(Texture::T_HDRI("assets/HDRI/container_free_Ref.hdr"));
+	Renderer::lighting->ibl->generateMaps(Texture::T_HDRI("assets/HDRI/belfast_sunset_puresky_4k.hdr"));
 
 
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
-		//b1->rotate(vec3(radians(0.5f), radians(0.5f), radians(0.5f)));
 
 
 		/*
@@ -124,9 +106,11 @@ int main() {
 		Shaders::Skybox->setMat4("mviewProjectionMatrix",camera->projection * mat4(mat3(camera->view)));
 		Shaders::Skybox->setInt("cube", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, maps[2]);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, Renderer::lighting->ibl->maps[0]);
 		Shaders::unitBox->render(Shaders::Skybox);
+		*/
 
+		/*
 		Shaders::PostProcessing->use();
 		Shaders::PostProcessing->setInt("buffer", 0);
 		glActiveTexture(GL_TEXTURE0);

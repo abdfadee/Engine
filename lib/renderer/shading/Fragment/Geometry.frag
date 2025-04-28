@@ -6,17 +6,12 @@ in FS_IN {
     mat3 TBN;
 } fs_in ;
 
-layout(std140) uniform View {
-    mat4 viewProjectionMatrix;
-};
-
 uniform vec3 viewPos;
 uniform vec3 color = vec3(0.0);
 uniform float metallic;
 uniform float roughness;
 uniform float ambientOcclusion;
 uniform float heightScale;
-uniform vec2 uvMultiplier;
 
 uniform sampler2D albedoMap;
 uniform sampler2D roughnessMap;
@@ -90,9 +85,6 @@ void main() {
     vec3 tangentDisplacement = vec3(0.0, 0.0, -parallaxHeight);  // Negative because heightmap is "1" at peaks
     vec3 worldDisplacement = fs_in.TBN * tangentDisplacement;
     FragPosition = fs_in.FragPos + worldDisplacement;
-    
-    //vec4 clip = viewProjectionMatrix * vec4(FragPosition,1.0);
-    //gl_FragDepth = (clip.z / clip.w);
 
     FragColor = color + texture(albedoMap, TexCoords).xyz;
 

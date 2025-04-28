@@ -3,7 +3,7 @@
 #include "shading/Shader.h"
 #include "texture/Texture.h"
 
-
+ 
 class Material {
 	vec3 color = vec3(0.0f);
 	float roughness = 0.0f;
