@@ -67,7 +67,7 @@ void main() {
     vec3 ambient = (kD * diffuse + specular);
     
     FragColor = vec4(ambient,1.0); 
-    FragColor = vec4(diffuse,1.0); 
+    //FragColor = vec4(diffuse,1.0); 
     //FragColor = vec4(texture(prefilterMap, N).rgb,1.0); 
     //FragColor = vec4(texture(brdfLUT, TexCoords).rgb,1.0); 
 }

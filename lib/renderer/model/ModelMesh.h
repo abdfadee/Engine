@@ -12,24 +12,14 @@
 
 
 
-const int TEXTURE_UNIT_ALBEDO = 0;
-const int TEXTURE_UNIT_METALLIC_ROUGHNESS = 1;
-const int TEXTURE_UNIT_NORMAL = 2;
-const int TEXTURE_UNIT_AMBIENT_OCCLUSION = 3;
-const int TEXTURE_UNIT_EMISSIVE = 4;
+
 
 /**
  * A mesh is a collection of geometry paired with a material.
  */
 class ModelMesh {
 public:
-    struct Vertex {
-        glm::vec3 mPosition;
-        glm::vec3 mNormal;
-        glm::vec2 mTextureCoordinates;
-        glm::vec3 mTangent;
-        glm::vec3 mBitangent;
-    };
+    
 
 
     struct Texture {
@@ -38,25 +28,7 @@ public:
     };
 
 
-    struct Material {
-        bool useTextureAlbedo = false;
-        bool useTextureMetallicRoughness = false;
-        bool useTextureNormal = false;
-        bool useTextureAmbientOcclusion = false;
-        bool useTextureEmissive = false;
-
-        glm::vec3 albedo = glm::vec3(1.0, 0, 0);
-        float metallic = 1.0f;
-        float roughness = 0.0f;
-        float ambientOcclusion = 1.0f;
-        glm::vec3 emissive = glm::vec3(0.0, 0.0, 0.0);
-
-        std::shared_ptr<Texture> textureAlbedo;
-        std::shared_ptr<Texture> textureMetallicRoughness;
-        std::shared_ptr<Texture> textureNormal;
-        std::shared_ptr<Texture> textureAmbientOcclusion;
-        std::shared_ptr<Texture> textureEmissive;
-    };
+    
 
 
     ModelMesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material material) : mVertices(vertices), mIndices(indices), mMaterial(material) {
@@ -65,48 +37,7 @@ public:
 
     void Draw(Shader* shader) {
 
-        // albedo
-        shader->setBool("material.useTextureAlbedo", mMaterial.useTextureAlbedo);
-        shader->setVec3("material.albedo", mMaterial.albedo);
-        if (mMaterial.useTextureAlbedo) {
-            glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_ALBEDO);
-            shader->setInt("material.textureAlbedo", TEXTURE_UNIT_ALBEDO);
-            glBindTexture(GL_TEXTURE_2D, mMaterial.textureAlbedo->mId);
-        }
-
-        shader->setBool("material.useTextureMetallicRoughness", mMaterial.useTextureMetallicRoughness);
-        shader->setFloat("material.metallic", mMaterial.metallic);
-        shader->setFloat("material.roughness", mMaterial.roughness);
-        if (mMaterial.useTextureMetallicRoughness) {
-            glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_METALLIC_ROUGHNESS);
-            shader->setInt("material.textureMetallicRoughness", TEXTURE_UNIT_METALLIC_ROUGHNESS);
-            glBindTexture(GL_TEXTURE_2D, mMaterial.textureMetallicRoughness->mId);
-        }
-
-        shader->setBool("material.useTextureNormal", mMaterial.useTextureNormal);
-        if (mMaterial.useTextureNormal) {
-            glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_NORMAL);
-            shader->setInt("material.textureNormal", TEXTURE_UNIT_NORMAL);
-            glBindTexture(GL_TEXTURE_2D, mMaterial.textureNormal->mId);
-        }
-
-        shader->setBool("material.useTextureAmbientOcclusion", mMaterial.useTextureAmbientOcclusion);
-        shader->setFloat("material.ambientOcclusion", mMaterial.ambientOcclusion);
-        if (mMaterial.useTextureAmbientOcclusion) {
-            glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_AMBIENT_OCCLUSION);
-            shader->setInt("material.textureAmbientOcclusion", TEXTURE_UNIT_AMBIENT_OCCLUSION);
-            glBindTexture(GL_TEXTURE_2D, mMaterial.textureAmbientOcclusion->mId);
-        }
-
-        shader->setBool("material.useTextureEmissive", mMaterial.useTextureEmissive);
-        shader->setVec3("material.emissive", mMaterial.emissive);
-        if (mMaterial.useTextureEmissive) {
-            glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_EMISSIVE);
-            shader->setInt("material.textureEmissive", TEXTURE_UNIT_EMISSIVE);
-            glBindTexture(GL_TEXTURE_2D, mMaterial.textureEmissive->mId);
-        }
-
-        glActiveTexture(GL_TEXTURE0);
+        
 
         // draw mesh
         glBindVertexArray(mVAO);

@@ -5,6 +5,7 @@
 
  
 class Material {
+	vec2 uvMultiplier = vec2(1);
 	vec3 color = vec3(0.0f);
 	float roughness = 0.0f;
 	float metallic = 0.0f;
@@ -41,13 +42,19 @@ public:
 
 		for (int i = 0; i < 6; ++i) {
 			if (textureMaps[i] != nullptr)
-				textureMaps[i]->bind(shader,i);
+				textureMaps[i]->bind(i);
 			else {
 				glActiveTexture(GL_TEXTURE0 + i);
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 		}
 
+		shader->setVec2("uvMultiplier", uvMultiplier);
+	}
+
+
+	void repeat(float uRepeat, float vRepeat) {
+		uvMultiplier = vec2(uRepeat, vRepeat);
 	}
 
 };

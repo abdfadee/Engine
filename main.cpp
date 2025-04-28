@@ -21,6 +21,7 @@ int main() {
 	Controls::initiliaze(window);
 
 
+	/*
 	Texture* t = Texture::T_2D("assets/2D/brickwall.jpg");
 
 	Texture* albedo = Texture::T_2D("assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" ,true);
@@ -35,19 +36,20 @@ int main() {
 	displacment->repeat(uRepeat, vRepeat);
 	roughness->repeat(uRepeat, vRepeat);
 	metallic->repeat(uRepeat, vRepeat);
+	*/
 
 
 
 	Object3D* space = new Object3D{};
 
-
+	/*
 	Mesh* floor = new Mesh{
 		new BoxGeometry{100,100,0.05},
 		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
 	};
 	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
-
+	*/
 	
 
 	PointLight* l1 = new PointLight(
@@ -82,7 +84,7 @@ int main() {
 	l3->translate(vec3(0, 10, 0));
 	l3->rotate(vec3(radians(-90.0f),0,0));
 	//l3->rotate(vec3(0, 0, radians(-30.0f)));
-	space->add(l3);
+	//space->add(l3);
 
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
@@ -91,7 +93,7 @@ int main() {
 	//space->add(camera);
 
 
-	Renderer::lighting->ibl->generateMaps(Texture::T_HDRI("assets/HDRI/belfast_sunset_puresky_4k.hdr"));
+	Renderer::lighting->ibl->generateMaps(Texture::T_HDRI("assets/HDRI/container_free_Ref.hdr"));
 
 
 	auto animationLoop = [&](float deltaTime) {

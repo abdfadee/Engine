@@ -49,7 +49,7 @@ public:
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
-		model = new Model("assets/models/helmet/DamagedHelmet.gltf",false);
+		model = new Model("assets/models/n/scene.gltf",false);
 	}
 
 
@@ -73,8 +73,6 @@ public:
 
 
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
 		Shaders::Geometry->use();
 		Shaders::Geometry->setVec3("viewPos",viewPos);
 		Shaders::Geometry->setInt("albedoMap", 0);
@@ -88,14 +86,15 @@ public:
 
 		
 		Shaders::GLTFGeometery->use();
-		mat4 matrix = translate(mat4(1), vec3(0, 5, 0))  * rotate(mat4(1),radians(90.0f),vec3(1,0,0));
+		mat4 matrix = translate(mat4(1), vec3(0, 0, 0)) * rotate(mat4(1),radians(90.0f), vec3(1, 0, 0)) *scale(mat4(1), vec3(0.025));
 		Shaders::GLTFGeometery->setMat4("model",matrix);
-		Shaders::GLTFGeometery->setMat4("normalMatrix", transpose(inverse(mat3(matrix))));
+		Shaders::GLTFGeometery->setMat3("normalMatrix", transpose(inverse(mat3(matrix))));
 		model->Draw(Shaders::GLTFGeometery);
 		
 
 		
 		// Shadow Pass
+		glEnable(GL_CULL_FACE);
 		lighting->updateDepthMaps(root);
 
 

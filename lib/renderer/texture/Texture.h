@@ -15,7 +15,6 @@ using namespace std;
 
 class Texture {
 	GLuint id;
-    vec2 uvMultiplier = vec2(1);
 
     Texture (GLuint id) : id(id) {}
 
@@ -40,16 +39,10 @@ public:
     }
 
 
-	void bind(Shader *shader , unsigned int textureUnit = 0) {
+	void bind(unsigned int textureUnit = 0) {
 		glActiveTexture(GL_TEXTURE0 + textureUnit);
 		glBindTexture(GL_TEXTURE_2D, id);
-        shader->setVec2("uvMultiplier", uvMultiplier);
 	}
-
-
-    void repeat(float uRepeat , float vRepeat) {
-        uvMultiplier = vec2(uRepeat, vRepeat);
-    }
 
 
     GLuint getId() { return id; }
