@@ -6,48 +6,35 @@
 #include <assimp/postprocess.h>
 #include <assimp/pbrmaterial.h>
 #include <map>
-#include "../core/Vertex.h"
+
 #include "../core/Mesh.h"
 #include "../texture/stbloader.h"
 #include "../texture/Texture.h"
-
-
 #include "../shading/Shader.h"
 
-/**
- * A collection of meshes.
- */
-class Model {
+
+
+class Model : public Object3D {
+private:
+    // data
+    std::string directory;
+    std::map<std::string, Texture*> texturesLoaded;
+    Material* materialOverride;
+
+
 public:
-    /**
-     * Load a glTF 2.0 model.
-     * @param path
-     */
     Model(std::string path , bool flipTexturesVertically = true) {
         loadModel(path, flipTexturesVertically);
     }
 
 
-    /**
-     * Load a glTF 2.0 model using a provided material. This will ignore any material
-     * present in the model file.
-     * @param path
-     */
-    Model(std::string path, Material* material, bool flipTexturesVertically) : mMaterialOverride(material) {
+    Model(std::string path, Material* material, bool flipTexturesVertically) : materialOverride(material) {
         loadModel(path, flipTexturesVertically);
     }
 
 
-
-    void Draw(Shader* shader) {
-        for (auto& mesh : mMeshes) {
-            mesh.Draw(shader);
-        }
-    }
-
-
 private:
-    void loadModel(std::string path, bool flipTexturesVertically) {
+    void loadModel(std::string path , bool flipTexturesVertically) {
         Assimp::Importer importer;
         stbi_set_flip_vertically_on_load(flipTexturesVertically);
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -56,18 +43,19 @@ private:
             std::cout << "Error loading model: " << importer.GetErrorString() << std::endl;
         }
 
-        mDirectory = path.substr(0, path.find_last_of('/'));
+        directory = path.substr(0, path.find_last_of('/'));
 
         processNode(scene->mRootNode, scene);
         stbi_set_flip_vertically_on_load(true);
     }
+
 
     // recursively load all meshes in the node tree
     void processNode(aiNode* node, const aiScene* scene) {
         // process all of this node's meshes if it has any
         for (unsigned int i = 0; i < node->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            mMeshes.push_back(processMesh(mesh, scene));
+            add(processMesh(mesh, scene));
         }
 
         // continue with children
@@ -76,15 +64,10 @@ private:
         }
     }
 
-	// convert assimp mesh to our own mesh class
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
-        std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
-        Material material;
 
-        if (mMaterialOverride) {
-            material = *mMaterialOverride;
-        }
+	// convert assimp mesh to our own mesh class
+    Mesh* processMesh(aiMesh* mesh, const aiScene* scene) {
+        Geometry* geometery = new Geometry();
 
         // vertices
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -131,7 +114,7 @@ private:
             bitangent.z = mesh->mBitangents[0].z;
             vertex.mBitangent = bitangent;
 
-            vertices.push_back(vertex);
+            geometery->vertices.push_back(vertex);
         }
 
         // indices
@@ -139,53 +122,80 @@ private:
             aiFace face = mesh->mFaces[i];
 
             for (unsigned int j = 0; j < face.mNumIndices; j++) {
-                indices.push_back(face.mIndices[j]);
+                geometery->indices.push_back(face.mIndices[j]);
             }
         }
-
-        Geometry geometery = Geometry(vertices,indices);
 
 
         // material
-        if (!mMaterialOverride) {
-            if (mesh->mMaterialIndex >= 0) {
-                aiMaterial* aiMaterial = scene->mMaterials[mesh->mMaterialIndex];
+        Material* material = new Material();
 
-                // albedo
-                if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE)) {
-                    material.useTextureAlbedo = true;
-                    material.textureAlbedo = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE);
-                }
+        if (materialOverride) {
+            material = materialOverride;
+            return new Mesh(geometery, material);
+        }
 
-                // metallicRoughness (in gltf 2.0 they are combined in one texture)
-                if (aiMaterial->GetTextureCount(aiTextureType_UNKNOWN)) {
-                    // defined here in assimp https://github.com/assimp/assimp/blob/master/include/assimp/pbrmaterial.h#L57
-                    material.useTextureMetallicRoughness = true;
-                    material.textureMetallicRoughness = loadMaterialTexture(aiMaterial, aiTextureType_UNKNOWN);
-                }
+        if (mesh->mMaterialIndex >= 0) {
+            aiMaterial* aiMaterial = scene->mMaterials[mesh->mMaterialIndex];
 
-                // normal
-                if (aiMaterial->GetTextureCount(aiTextureType_NORMALS)) {
-                    material.useTextureNormal = true;
-                    material.textureNormal = loadMaterialTexture(aiMaterial, aiTextureType_NORMALS);
-                }
+            // albedo
+            if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE)) {
+                material->useTextureAlbedo = true;
+                material->textureAlbedo = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE);
+            }
 
-                // ambient occlusion
-                if (aiMaterial->GetTextureCount(aiTextureType_LIGHTMAP)) {
-                    material.useTextureAmbientOcclusion = true;
-                    material.textureAmbientOcclusion = loadMaterialTexture(aiMaterial, aiTextureType_LIGHTMAP);
-                }
+            // metallicRoughness (in gltf 2.0 they are combined in one texture)
+            if (aiMaterial->GetTextureCount(aiTextureType_UNKNOWN)) {
+                material->useTextureMetallicRoughness = true;
+                material->textureMetallicRoughness = loadMaterialTexture(aiMaterial, aiTextureType_UNKNOWN);
+            }
 
-                // emissive
-                if (aiMaterial->GetTextureCount(aiTextureType_EMISSIVE)) {
-                    material.useTextureEmissive = true;
-                    material.textureEmissive = loadMaterialTexture(aiMaterial, aiTextureType_EMISSIVE);
-                }
+            // metallic
+            if (aiMaterial->GetTextureCount(aiTextureType_METALNESS)) {
+                material->useTextureMetallic = true;
+                material->textureMetallic = loadMaterialTexture(aiMaterial, aiTextureType_METALNESS);
+            }
+
+            // roughness
+            if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS)) {
+                material->useTextureRoughness = true;
+                material->textureRoughness = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE_ROUGHNESS);
+            }
+
+            // normal
+            if (aiMaterial->GetTextureCount(aiTextureType_NORMALS)) {
+                material->useTextureNormal = true;
+                material->textureNormal = loadMaterialTexture(aiMaterial, aiTextureType_NORMALS);
+            }
+
+            // height
+            if (aiMaterial->GetTextureCount(aiTextureType_HEIGHT)) {
+                material->useTextureHeight = true;
+                material->textureHeight = loadMaterialTexture(aiMaterial, aiTextureType_HEIGHT);
+            }
+
+            // displacement
+            if (aiMaterial->GetTextureCount(aiTextureType_DISPLACEMENT)) {
+                material->useTextureHeight = true;
+                material->textureHeight = loadMaterialTexture(aiMaterial, aiTextureType_DISPLACEMENT);
+            }
+
+            // ambient occlusion
+            if (aiMaterial->GetTextureCount(aiTextureType_LIGHTMAP)) {
+                material->useTextureAmbientOcclusion = true;
+                material->textureAmbientOcclusion = loadMaterialTexture(aiMaterial, aiTextureType_LIGHTMAP);
+            }
+
+            // emissive
+            if (aiMaterial->GetTextureCount(aiTextureType_EMISSIVE)) {
+                material->useTextureEmissive = true;
+                material->textureEmissive = loadMaterialTexture(aiMaterial, aiTextureType_EMISSIVE);
             }
         }
 
-        return ModelMesh(geometery , material);
+        return new Mesh(geometery , material);
     }
+
 
 	// loads the first texture of given type
     Texture* loadMaterialTexture(aiMaterial* material, aiTextureType type) {
@@ -193,30 +203,22 @@ private:
         material->GetTexture(type, 0, &path);
 
         // check if we already have it loaded and use that if so
-        auto iterator = mTexturesLoaded.find(std::string(path.C_Str()));
-        if (iterator != mTexturesLoaded.end()) {
+        auto iterator = texturesLoaded.find(std::string(path.C_Str()));
+        if (iterator != texturesLoaded.end()) {
             return iterator->second;
         }
 
         std::cout << "Process material: " << path.C_Str() << std::endl;
 
-        std::string fullPath = mDirectory + '/' + path.C_Str();
+        std::string fullPath = directory + '/' + path.C_Str();
         bool gamma = false;
         if (type == aiTextureType_DIFFUSE)
             gamma = true;
         Texture* texture = Texture::T_2D(fullPath,gamma);
 
         // cache it for future lookups
-        mTexturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
+        texturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
 
         return texture;
     }
-
-
-private:
-    // data
-    std::vector<Mesh> mMeshes;
-    std::string mDirectory;
-    std::map<std::string, Texture*> mTexturesLoaded;
-    std::shared_ptr<Material> mMaterialOverride;
 };

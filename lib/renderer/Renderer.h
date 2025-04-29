@@ -23,8 +23,6 @@ public:
 
 	inline static GLuint width, height;
 	inline static Lighting* lighting;
-
-	Model* model;
 	
 
 public:
@@ -38,8 +36,9 @@ public:
 		gBuffer = new FrameBuffer(width, height,GL_DEPTH_COMPONENT24, {
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Position Buffer
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Normal Buffer 
-			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},		// Color Buffer 
+			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Color Buffer 
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Material Buffer 
+			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Emissive Buffer 
 		});
 		lBuffer = new FrameBuffer(width, height, GL_DEPTH_COMPONENT24, {
 				{GL_RGBA16F,GL_NEAREST,GL_CLAMP_TO_EDGE}
@@ -47,9 +46,6 @@ public:
 
 		lighting = new Lighting(width, height);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-
-		model = new Model("assets/models/n/scene.gltf",false);
 	}
 
 
@@ -58,6 +54,7 @@ public:
 
 		camera->updateViewProjectionMatrix();
 		vec3 viewPos = camera->getWorldPosition();
+
 
 		// Geometery Pass
 		gBuffer->bind();
@@ -75,22 +72,17 @@ public:
 		glEnable(GL_DEPTH_TEST);
 		Shaders::Geometry->use();
 		Shaders::Geometry->setVec3("viewPos",viewPos);
-		Shaders::Geometry->setInt("albedoMap", 0);
-		Shaders::Geometry->setInt("roughnessMap", 1);
-		Shaders::Geometry->setInt("metallicMap", 2);
-		Shaders::Geometry->setInt("normalMap", 3);
-		Shaders::Geometry->setInt("displacmentMap", 4);
-		Shaders::Geometry->setInt("aoMap", 5);
+		Shaders::Geometry->setInt("material.textureAlbedo", TEXTURE_UNIT_ALBEDO);
+		Shaders::Geometry->setInt("material.textureNormal", TEXTURE_UNIT_NORMAL);
+		Shaders::Geometry->setInt("material.textureHeight", TEXTURE_UNIT_Height);
+		Shaders::Geometry->setInt("material.textureMetallicRoughness", TEXTURE_UNIT_METALLIC_ROUGHNESS);
+		Shaders::Geometry->setInt("material.textureMetallic", TEXTURE_UNIT_METALLIC);
+		Shaders::Geometry->setInt("material.textureRoughness", TEXTURE_UNIT_ROUGHNESS);
+		Shaders::Geometry->setInt("material.textureAmbientOcclusion", TEXTURE_UNIT_AMBIENT_OCCLUSION);
+		Shaders::Geometry->setInt("material.textureEmissive", TEXTURE_UNIT_EMISSIVE);
 
 		root->render(Shaders::Geometry,mat4(1.0f),true,true);
 
-		
-		Shaders::GLTFGeometery->use();
-		mat4 matrix = translate(mat4(1), vec3(0, 0, 0)) * rotate(mat4(1),radians(90.0f), vec3(1, 0, 0)) *scale(mat4(1), vec3(0.025));
-		Shaders::GLTFGeometery->setMat4("model",matrix);
-		Shaders::GLTFGeometery->setMat3("normalMatrix", transpose(inverse(mat3(matrix))));
-		model->Draw(Shaders::GLTFGeometery);
-		
 
 		
 		// Shadow Pass
@@ -129,12 +121,15 @@ public:
 
 		/*
 		// Debug
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 		Shaders::Basic->use();
-		Shaders::Basic->setMat4("viewProjectionMatrix", viewProjectionMatrix);
 		root->render(Shaders::Basic);
 		*/
+		
 	}
 
 

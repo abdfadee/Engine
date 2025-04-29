@@ -24,8 +24,6 @@ public:
 
         // Left (-X)
         createPlane({ -1, 0, 0 }, { 0, 0, 1 }, { 0, 1, 0 }, depth, height, width, depthSegments, heightSegments);
-
-        generateBuffer();
     }
 
 private:
@@ -42,16 +40,20 @@ private:
 
         for (int y = 0; y <= heightSegments; ++y) {
             for (int x = 0; x <= widthSegments; ++x) {
+                Vertex vertex;
+
                 glm::vec3 position = (right * (-halfWidth + x * segmentWidth)) + (up * (-halfHeight + y * segmentHeight)) + (normal * depth * 0.5f);
-                vertices.push_back(position);
-                normals.push_back(normal);
+                vertex.mPosition = position;
+                vertex.mNormal = normal;
                 glm::vec2 uvCoord = glm::vec2((float)x / widthSegments, (float)y / heightSegments);
-                uv.push_back(uvCoord);
+                vertex.mTextureCoordinates = uvCoord;
 
                 glm::vec3 tangent = glm::normalize(right);
                 glm::vec3 bitangent = glm::normalize(glm::cross(normal, tangent));
-                tangents.push_back(tangent);
-                bitangents.push_back(bitangent);
+                vertex.mTangent = tangent;
+                vertex.mBitangent = bitangent;
+                
+                vertices.push_back(vertex);
             }
         }
 

@@ -18,11 +18,11 @@
 class Mesh : public Object3D {
 public:
     unsigned int VAO, VBO, EBO;
-    Material material;
-    Geometry geometry;
+    Material* material;
+    Geometry* geometry;
 
 
-    Mesh(Geometry geometry, Material material) : geometry(geometry) , material(material) {
+    Mesh(Geometry* geometry, Material* material = nullptr) : geometry(geometry) , material(material) {
         // create our data structures
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -31,10 +31,10 @@ public:
         glBindVertexArray(VAO); // use this VAO for subsequent calls
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO); // use this VBO for subsequent calls
-        glBufferData(GL_ARRAY_BUFFER, geometry.vertices.size() * sizeof(Vertex), &geometry.vertices[0], GL_STATIC_DRAW); // copy over the vertex data
+        glBufferData(GL_ARRAY_BUFFER, geometry->vertices.size() * sizeof(Vertex), &geometry->vertices[0], GL_STATIC_DRAW); // copy over the vertex data
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // use this EBO for subsequent calls
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry.indices.size() * sizeof(unsigned int), &geometry.indices[0], GL_STATIC_DRAW); // copy over the index data
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry->indices.size() * sizeof(unsigned int), &geometry->indices[0], GL_STATIC_DRAW); // copy over the index data
 
         // setup the locations of vertex data
         // positions
@@ -61,12 +61,11 @@ public:
     }
 
 
-
     virtual void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
         Object3D::render(shader, parentMatrix, materialize, geometeryPass);
 
         if (materialize)
-            material.bind(shader);
+            material->bind(shader);
 
         shader->setMat4("model", worldMatrix);
         shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));
@@ -74,10 +73,9 @@ public:
     }
 
 
-
     void draw() {
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, geometry.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, geometry->indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
 

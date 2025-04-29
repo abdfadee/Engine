@@ -14,22 +14,26 @@ public:
 
         for (int y = 0; y <= heightSegments; ++y) {
             for (int x = 0; x <= widthSegments; ++x) {
+                Vertex vertex;
+
                 float xPos = -halfWidth + x * segmentWidth;
                 float yPos = -halfHeight + y * segmentHeight;
-                vertices.push_back({ xPos, yPos, 0.0f });
-            }
-        }
+                vertex.mPosition = { xPos, yPos, 0.0f };
 
-        // All normals point along the positive Z-axis
-        normals.resize(vertices.size(), { 0.0f, 0.0f, 1.0f });
+                // All normals point along the positive Z-axis
+                vertex.mNormal = { 0.0f, 0.0f, 1.0f };
 
-        for (int y = 0; y <= heightSegments; ++y) {
-            for (int x = 0; x <= widthSegments; ++x) {
                 float u = static_cast<float>(x) / widthSegments;
                 float v = static_cast<float>(y) / heightSegments;
-                uv.push_back({ u, v });
+                vertex.mTextureCoordinates = { u, v };
+
+                vertex.mTangent = { 1.0f, 0.0f, 0.0f };
+                vertex.mBitangent = { 0.0f, 1.0f, 0.0f };
+
+                vertices.push_back(vertex);
             }
         }
+
 
         for (int y = 0; y < heightSegments; ++y) {
             for (int x = 0; x < widthSegments; ++x) {
@@ -50,11 +54,6 @@ public:
             }
         }
 
-        tangents.resize(vertices.size(), { 1.0f, 0.0f, 0.0f });   // Tangent points along the X-axis
-        bitangents.resize(vertices.size(), { 0.0f, 1.0f, 0.0f }); // Bitangent points along the Y-axis
-
-
-        generateBuffer();
 	}
 
 

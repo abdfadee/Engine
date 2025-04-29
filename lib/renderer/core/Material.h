@@ -16,7 +16,8 @@ const int TEXTURE_UNIT_EMISSIVE = 6;
 
 
 
-struct Material {
+class Material {
+public:
     bool useTextureAlbedo = false;
     bool useTextureNormal = false;
     bool useTextureHeight = false;
@@ -28,7 +29,7 @@ struct Material {
 
     vec2 uvMultiplier = vec2(1);
     glm::vec3 albedo = glm::vec3(1.0, 0, 0);
-    float heightScale = 0.0f;
+    float heightScale = 0.1f;
     float metallic = 1.0f;
     float roughness = 0.0f;
     float ambientOcclusion = 1.0f;
@@ -42,6 +43,51 @@ struct Material {
     Texture* textureRoughness;
     Texture* textureAmbientOcclusion;
     Texture* textureEmissive;
+
+
+    Material() {}
+
+
+    Material(glm::vec3 albedo,float metallic,float roughness,float ambientOcclusion = 1.0f,glm::vec3 emissive = vec3(0)) {}
+
+
+    Material(Texture* textureAlbedo,Texture* textureNormal,Texture* textureHeight,Texture* textureMetallic,Texture* textureRoughness,Texture* textureAmbientOcclusion = NULL,Texture* textureEmissive = NULL) {
+        if (textureAlbedo != NULL) {
+            useTextureAlbedo = true;
+            this->textureAlbedo = textureAlbedo;
+        }
+
+        if (textureNormal != NULL) {
+            useTextureNormal = true;
+            this->textureNormal = textureNormal;
+        }
+
+        if (textureHeight != NULL) {
+            useTextureHeight = true;
+            this->textureHeight = textureHeight;
+        }
+
+        if (textureMetallic != NULL) {
+            useTextureMetallic = true;
+            this->textureMetallic = textureMetallic;
+        }
+
+        if (textureRoughness != NULL) {
+            useTextureRoughness = true;
+            this->textureRoughness = textureRoughness;
+        }
+
+        if (textureAmbientOcclusion != NULL) {
+            useTextureAmbientOcclusion = true;
+            this->textureAmbientOcclusion = textureAmbientOcclusion;
+        }
+
+        if (textureEmissive != NULL) {
+            useTextureEmissive = true;
+            this->textureEmissive = textureEmissive;
+        }
+    }
+
 
 
     void bind(Shader* shader) {

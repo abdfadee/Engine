@@ -14,6 +14,8 @@ public:
             float phi = v * glm::pi<float>(); // Polar angle [0, π]
 
             for (unsigned int j = 0; j <= segments; ++j) {
+                Vertex vertex;
+
                 float u = static_cast<float>(j) / segments;
                 float theta = u * glm::two_pi<float>(); // Azimuthal angle [0, 2π]
 
@@ -28,14 +30,14 @@ public:
                 float z = radiusZ * sinPhi * sinTheta;
 
                 glm::vec3 position(x, y, z);
-                vertices.push_back(position);
+                vertex.mPosition = position;
 
                 // Normal
                 glm::vec3 normal = glm::normalize(position);
-                normals.push_back(normal);
+                vertex.mNormal = normal;
 
                 // UV
-                uv.push_back(glm::vec2(u, v));
+                vertex.mTextureCoordinates = glm::vec2(u, v);
 
                 // Tangent
                 glm::vec3 tangent = glm::vec3(
@@ -47,7 +49,7 @@ public:
                     tangent = glm::vec3(1.0f, 0.0f, 0.0f);
                 else
                     tangent = glm::normalize(tangent);
-                tangents.push_back(tangent);
+                
 
                 // Bitangent
                 glm::vec3 bitangent = glm::cross(normal, tangent);
@@ -55,7 +57,11 @@ public:
                     bitangent = glm::vec3(0.0f, 1.0f, 0.0f);
                 else
                     bitangent = glm::normalize(bitangent);
-                bitangents.push_back(bitangent);
+                
+                vertex.mTangent = tangent;
+                vertex.mBitangent = bitangent;
+
+                vertices.push_back(vertex);
             }
         }
 
@@ -77,7 +83,6 @@ public:
             }
         }
 
-        generateBuffer(); // Generate VBO/VAO after geometry is built
     }
 
 };

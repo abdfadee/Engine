@@ -10,6 +10,8 @@ public:
     ConeGeometry(double baseRadius, double height, unsigned int segments = 72) {
         // Side vertices (around base perimeter)
         for (unsigned int i = 0; i <= segments; ++i) {
+            Vertex vertex;
+
             float u = static_cast<float>(i) / segments;
             float theta = u * glm::two_pi<float>();
 
@@ -18,31 +20,36 @@ public:
             float z = baseRadius * std::sin(theta);
 
             glm::vec3 position(x, y, z);
-            vertices.push_back(position);
+            vertex.mPosition = position;
 
             // Normal (approximate for cone side)
             glm::vec3 normal = glm::normalize(glm::vec3(x, baseRadius / height, z));
-            normals.push_back(normal);
+            vertex.mNormal = normal;
 
             // UV (u along circumference, v at base)
-            uv.push_back(glm::vec2(u, 0.0f));
+            vertex.mTextureCoordinates = glm::vec2(u, 0.0f);
 
             // Tangent (around the base)
             glm::vec3 tangent = glm::normalize(glm::vec3(-std::sin(theta), 0.0f, std::cos(theta)));
-            tangents.push_back(tangent);
 
             // Bitangent
             glm::vec3 bitangent = glm::cross(normal, tangent);
-            bitangents.push_back(glm::normalize(bitangent));
+            
+            vertex.mTangent = tangent;
+            vertex.mBitangent = bitangent;
+
+            vertices.push_back(vertex);
         }
 
         // Apex vertex (top point)
-        glm::vec3 apex(0.0f, height, 0.0f);
+        Vertex apex;
+        apex.mPosition = glm::vec3(0.0f, height, 0.0f);
+        apex.mNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+        apex.mTextureCoordinates = glm::vec2(0.5f, 1.0f);
+        apex.mTangent = glm::vec3(1.0f, 0.0f, 0.0f);
+        apex.mBitangent = glm::vec3(0.0f, 0.0f, 1.0f);
         vertices.push_back(apex);
-        normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
-        uv.push_back(glm::vec2(0.5f, 1.0f));
-        tangents.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-        bitangents.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+
 
         unsigned int apexIndex = static_cast<unsigned int>(vertices.size() - 1);
 
@@ -54,12 +61,14 @@ public:
         }
 
         // Center vertex for base
-        glm::vec3 baseCenter(0.0f, 0.0f, 0.0f);
+        Vertex baseCenter;
+        baseCenter.mPosition = glm::vec3 (0.0f, 0.0f, 0.0f);
+        baseCenter.mNormal = glm::vec3(0.0f, -1.0f, 0.0f);
+        baseCenter.mTextureCoordinates = glm::vec2(0.5f, 0.5f);
+        baseCenter.mTangent = glm::vec3(1.0f, 0.0f, 0.0f);
+        baseCenter.mBitangent = glm::vec3(0.0f, 0.0f, 1.0f);
         vertices.push_back(baseCenter);
-        normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
-        uv.push_back(glm::vec2(0.5f, 0.5f));
-        tangents.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-        bitangents.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+
 
         unsigned int baseCenterIndex = static_cast<unsigned int>(vertices.size() - 1);
 
@@ -70,6 +79,5 @@ public:
             indices.push_back((i + 1) % (segments + 1));
         }
 
-        generateBuffer(); // Generate VBO/VAO after geometry is built
     }
 };

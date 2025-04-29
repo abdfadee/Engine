@@ -14,6 +14,4 @@ public:
 	vector<Vertex> vertices;
 	vector<GLuint> indices;
 
-
-	Geometry(vector<Vertex> vertices , vector<GLuint> indices) : vertices(vertices) , indices(indices) {}
 };

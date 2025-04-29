@@ -21,7 +21,7 @@ int main() {
 	Controls::initiliaze(window);
 
 
-	/*
+	
 	Texture* t = Texture::T_2D("assets/2D/brickwall.jpg");
 
 	Texture* albedo = Texture::T_2D("assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" ,true);
@@ -30,26 +30,25 @@ int main() {
 	Texture* roughness = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Roughness.jpg");
 	Texture* metallic = Texture::T_2D( "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg");
 
+	Material* material = new Material(albedo,normal,displacment,NULL,roughness);
 	float uRepeat = 30.0f , vRepeat = 30.0f;
-	albedo->repeat(uRepeat, vRepeat);
-	normal->repeat(uRepeat, vRepeat);
-	displacment->repeat(uRepeat, vRepeat);
-	roughness->repeat(uRepeat, vRepeat);
-	metallic->repeat(uRepeat, vRepeat);
-	*/
-
+	
+	
 
 
 	Object3D* space = new Object3D{};
 
-	/*
 	Mesh* floor = new Mesh{
-		new BoxGeometry{100,100,0.05},
-		new Material{albedo,roughness,nullptr,normal,displacment,0.125f}
+		new BoxGeometry{1,1,1},
+		material
 	};
 	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
-	*/
+
+
+	//Model* model = new Model("assets/models/m/scene.gltf", false);
+	//space->add(model);
+
 	
 	/*
 	PointLight* l1 = new PointLight(
@@ -86,6 +85,7 @@ int main() {
 	//l3->rotate(vec3(0, 0, radians(-30.0f)));
 	//space->add(l3);
 	*/
+
 
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};

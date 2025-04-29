@@ -15,6 +15,8 @@ public:
             float sinTheta = sin(theta);
 
             for (int j = 0; j <= minorSegments; ++j) {
+                Vertex vertex;
+
                 float phi = j * 2.0f * PI / minorSegments;
                 float cosPhi = cos(phi);
                 float sinPhi = sin(phi);
@@ -34,11 +36,13 @@ public:
                 glm::vec3 tangent(-sinTheta, 0.0f, cosTheta);
                 glm::vec3 bitangent = glm::cross(normal, tangent);
 
-                vertices.push_back(position);
-                normals.push_back(normal);
-                tangents.push_back(tangent);
-                bitangents.push_back(bitangent);
-                uv.emplace_back((float)i / majorSegments, (float)j / minorSegments);
+                vertex.mPosition = position;
+                vertex.mNormal = normal;
+                vertex.mTextureCoordinates = vec2((float)i / majorSegments, (float)j / minorSegments);
+                vertex.mTangent = tangent;
+                vertex.mBitangent = bitangent;
+
+                vertices.push_back(vertex);
             }
         }
 
@@ -53,7 +57,6 @@ public:
             }
         }
 
-        generateBuffer();
 	}
 
 };
