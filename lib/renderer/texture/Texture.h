@@ -14,28 +14,33 @@ using namespace std;
 
 
 class Texture {
-	GLuint id;
-
-    Texture (GLuint id) : id(id) {}
-
+    unsigned int id;
+    std::string path;
 
 public:
+    Texture (unsigned int id , string path) : id(id) , path(path) {}
+
+    static void deactivateTextureUnit(GLuint unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     static Texture* T_2D (string path, bool gamma = false) {
         GLuint id = AssetManager::getTexture(path);
         if (id != -1)
-            return new Texture(id);
+            return new Texture(id, path);
         id = loadTexture(path.c_str(), gamma);
         AssetManager::addTexture(path, id);
-        return new Texture(id);
+        return new Texture(id,path);
     }
 
     static Texture* T_HDRI(string path) {
         GLuint id = AssetManager::getTexture(path);
         if (id != -1)
-            return new Texture(id);
+            return new Texture(id, path);
         id = loadHDRI(path.c_str());
         AssetManager::addTexture(path, id);
-        return new Texture(id);
+        return new Texture(id, path);
     }
 
 
@@ -48,9 +53,10 @@ public:
     GLuint getId() { return id; }
 
 
-    static GLuint loadTexture(const char* path, bool gamma = false)
+    static GLuint loadTexture(const char* path, bool gamma = false , bool flip = false)
     {
-        stbi_set_flip_vertically_on_load(true);
+        if (flip)
+            stbi_set_flip_vertically_on_load(true);
 
         unsigned int textureID;
         glGenTextures(1, &textureID);
@@ -79,6 +85,7 @@ public:
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

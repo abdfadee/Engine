@@ -51,7 +51,7 @@ int main() {
 	space->add(floor);
 	*/
 	
-
+	/*
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
 		100.0f,
@@ -85,6 +85,7 @@ int main() {
 	l3->rotate(vec3(radians(-90.0f),0,0));
 	//l3->rotate(vec3(0, 0, radians(-30.0f)));
 	//space->add(l3);
+	*/
 
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};

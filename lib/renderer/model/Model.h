@@ -5,10 +5,13 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/pbrmaterial.h>
-#include "../texture/stbloader.h"
-
 #include <map>
-#include "ModelMesh.h"
+#include "../core/Vertex.h"
+#include "../core/Mesh.h"
+#include "../texture/stbloader.h"
+#include "../texture/Texture.h"
+
+
 #include "../shading/Shader.h"
 
 /**
@@ -20,20 +23,17 @@ public:
      * Load a glTF 2.0 model.
      * @param path
      */
-    Model(std::string path) {
-        loadModel(path, true);
-    }
-
-    Model(std::string path, bool flipTexturesVertically) {
+    Model(std::string path , bool flipTexturesVertically = true) {
         loadModel(path, flipTexturesVertically);
     }
+
 
     /**
      * Load a glTF 2.0 model using a provided material. This will ignore any material
      * present in the model file.
      * @param path
      */
-    Model(std::string path, std::shared_ptr<ModelMesh::Material> material, bool flipTexturesVertically) : mMaterialOverride(material) {
+    Model(std::string path, Material* material, bool flipTexturesVertically) : mMaterialOverride(material) {
         loadModel(path, flipTexturesVertically);
     }
 
@@ -77,10 +77,10 @@ private:
     }
 
 	// convert assimp mesh to our own mesh class
-    ModelMesh processMesh(aiMesh* mesh, const aiScene* scene) {
-        std::vector<ModelMesh::Vertex> vertices;
+    Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
+        std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
-        ModelMesh::Material material;
+        Material material;
 
         if (mMaterialOverride) {
             material = *mMaterialOverride;
@@ -88,7 +88,7 @@ private:
 
         // vertices
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-            ModelMesh::Vertex vertex;
+            Vertex vertex;
 
             // position
             glm::vec3 position;
@@ -143,6 +143,9 @@ private:
             }
         }
 
+        Geometry geometery = Geometry(vertices,indices);
+
+
         // material
         if (!mMaterialOverride) {
             if (mesh->mMaterialIndex >= 0) {
@@ -181,11 +184,11 @@ private:
             }
         }
 
-        return ModelMesh(vertices, indices, material);
+        return ModelMesh(geometery , material);
     }
 
 	// loads the first texture of given type
-    std::shared_ptr<ModelMesh::Texture> loadMaterialTexture(aiMaterial* material, aiTextureType type) {
+    Texture* loadMaterialTexture(aiMaterial* material, aiTextureType type) {
         aiString path;
         material->GetTexture(type, 0, &path);
 
@@ -195,87 +198,25 @@ private:
             return iterator->second;
         }
 
-        auto texture = std::make_shared<ModelMesh::Texture>();
-
         std::cout << "Process material: " << path.C_Str() << std::endl;
 
-        texture->mId = textureFromFile(path.C_Str(), mDirectory, type);
-        texture->mPath = path.C_Str();
+        std::string fullPath = mDirectory + '/' + path.C_Str();
+        bool gamma = false;
+        if (type == aiTextureType_DIFFUSE)
+            gamma = true;
+        Texture* texture = Texture::T_2D(fullPath,gamma);
 
         // cache it for future lookups
-        mTexturesLoaded.insert(std::pair<std::string, std::shared_ptr<ModelMesh::Texture>>(path.C_Str(), texture));
+        mTexturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
 
         return texture;
-    }
-
-    unsigned int textureFromFile(const char* fileName, std::string directory, aiTextureType type) {
-        int width, height, numChannels;
-
-        std::string relativePath = fileName;
-        std::string path = directory + '/' + relativePath;
-
-        unsigned char* data = stbi_load(path.c_str(), &width, &height, &numChannels, 0);
-
-        if (!data) {
-            std::cout << "Failed to load texture data" << std::endl;
-            stbi_image_free(data);
-        }
-
-        GLenum format;
-
-        switch (numChannels) {
-        case 1:
-            format = GL_RED;
-            break;
-        case 3:
-            format = GL_RGB;
-            break;
-        case 4:
-            format = GL_RGBA;
-            break;
-        }
-
-        GLenum internalFormat = format;
-
-        // account for sRGB textures here
-        //
-        // diffuse textures are in sRGB space (non-linear)
-        // metallic/roughness/normals are usually in linear
-        // AO depends
-        if (type == aiTextureType_DIFFUSE) {
-            if (internalFormat == GL_RGB) {
-                internalFormat = GL_SRGB;
-            }
-            else if (internalFormat == GL_RGBA) {
-                internalFormat = GL_SRGB_ALPHA;
-            }
-        }
-
-        unsigned int textureId;
-        glGenTextures(1, &textureId);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-
-        // generate the texture
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        // texture wrapping/filtering options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // image is resized using bilinear filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // image is enlarged using bilinear filtering
-
-        // free the image data
-        stbi_image_free(data);
-
-        return textureId;
     }
 
 
 private:
     // data
-    std::vector<ModelMesh> mMeshes;
+    std::vector<Mesh> mMeshes;
     std::string mDirectory;
-    std::map<std::string, std::shared_ptr<ModelMesh::Texture>> mTexturesLoaded;
-    std::shared_ptr<ModelMesh::Material> mMaterialOverride;
+    std::map<std::string, Texture*> mTexturesLoaded;
+    std::shared_ptr<Material> mMaterialOverride;
 };

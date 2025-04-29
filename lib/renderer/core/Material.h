@@ -1,60 +1,126 @@
 #pragma once
-#include <glad/glad.h>
-#include "shading/Shader.h"
-#include "texture/Texture.h"
-
- 
-class Material {
-	vec2 uvMultiplier = vec2(1);
-	vec3 color = vec3(0.0f);
-	float roughness = 0.0f;
-	float metallic = 0.0f;
-	float heightScale = 0.0f;
-	float ao = 0.0f;
-	Texture* textureMaps[6] = {nullptr,nullptr, nullptr, nullptr, nullptr, nullptr};
+#include <glm/glm.hpp>
+#include "../shading/Shader.h"
+#include "../texture/Texture.h"
 
 
-public: 
-	Material(Texture* albedoMap , Texture* roughnessMap, Texture* metallicMap, Texture* normalMap = nullptr, Texture* displacmentMap = nullptr, float heightScale = 1.0f ,Texture* aoMap = nullptr) {
-		textureMaps[0] = albedoMap;
-		textureMaps[1] = roughnessMap;
-		textureMaps[2] = metallicMap;
-		textureMaps[3] = normalMap;
-		textureMaps[4] = displacmentMap;
-		textureMaps[5] = aoMap;
-		this->heightScale = (displacmentMap == nullptr) ? 0.0f : heightScale;
-	}
+
+const int TEXTURE_UNIT_ALBEDO = 0;
+const int TEXTURE_UNIT_NORMAL = 1;
+const int TEXTURE_UNIT_Height = 2;
+const int TEXTURE_UNIT_METALLIC_ROUGHNESS = 3;
+const int TEXTURE_UNIT_METALLIC = 3;
+const int TEXTURE_UNIT_ROUGHNESS = 4;
+const int TEXTURE_UNIT_AMBIENT_OCCLUSION = 5;
+const int TEXTURE_UNIT_EMISSIVE = 6;
 
 
-	Material(vec3 color , float roughness , float metallic , float ao = 0.0f) :
-		color(color),
-		roughness(roughness),
-		metallic(metallic),
-		ao(ao) {}
+
+struct Material {
+    bool useTextureAlbedo = false;
+    bool useTextureNormal = false;
+    bool useTextureHeight = false;
+    bool useTextureMetallicRoughness = false;
+    bool useTextureMetallic = false;
+    bool useTextureRoughness = false;
+    bool useTextureAmbientOcclusion = false;
+    bool useTextureEmissive = false;
+
+    vec2 uvMultiplier = vec2(1);
+    glm::vec3 albedo = glm::vec3(1.0, 0, 0);
+    float heightScale = 0.0f;
+    float metallic = 1.0f;
+    float roughness = 0.0f;
+    float ambientOcclusion = 1.0f;
+    glm::vec3 emissive = glm::vec3(0.0, 0.0, 0.0);
+
+    Texture* textureAlbedo;
+    Texture* textureNormal;
+    Texture* textureHeight;
+    Texture* textureMetallicRoughness;
+    Texture* textureMetallic;
+    Texture* textureRoughness;
+    Texture* textureAmbientOcclusion;
+    Texture* textureEmissive;
 
 
-	void bind(Shader *shader) {
-		shader->setVec3("color",color);
-		shader->setFloat("roughness",roughness);
-		shader->setFloat("metallic", metallic);
-		shader->setFloat("ambientOcclusion",ao);
-		shader->setFloat("heightScale", heightScale);
-
-		for (int i = 0; i < 6; ++i) {
-			if (textureMaps[i] != nullptr)
-				textureMaps[i]->bind(i);
-			else {
-				glActiveTexture(GL_TEXTURE0 + i);
-				glBindTexture(GL_TEXTURE_2D, 0);
-			}
-		}
-
-		shader->setVec2("uvMultiplier", uvMultiplier);
-	}
+    void bind(Shader* shader) {
+        // Albedo
+        shader->setVec3("material.albedo", albedo);
+        shader->setBool("material.useTextureAlbedo", useTextureAlbedo);
+        if (useTextureAlbedo)
+            textureAlbedo->bind(TEXTURE_UNIT_ALBEDO);
+        else
+            Texture::deactivateTextureUnit(TEXTURE_UNIT_ALBEDO);
 
 
-	void repeat(float uRepeat, float vRepeat) {
-		uvMultiplier = vec2(uRepeat, vRepeat);
-	}
+
+        // Material
+        shader->setFloat("material.metallic", metallic);
+        shader->setFloat("material.roughness", roughness);
+
+        shader->setBool("material.useTextureMetallicRoughness", useTextureMetallicRoughness);
+        shader->setBool("material.useTextureMetallic", useTextureMetallic);
+        shader->setBool("material.useTextureRoughness", useTextureRoughness);
+
+        if (useTextureMetallicRoughness)
+            textureMetallicRoughness->bind(TEXTURE_UNIT_METALLIC_ROUGHNESS);
+        else {
+            Texture::deactivateTextureUnit(TEXTURE_UNIT_METALLIC_ROUGHNESS);
+
+            if (useTextureMetallic)
+                textureMetallic->bind(TEXTURE_UNIT_METALLIC);
+            else
+                Texture::deactivateTextureUnit(TEXTURE_UNIT_METALLIC);
+            if (useTextureRoughness)
+                textureRoughness->bind(TEXTURE_UNIT_ROUGHNESS);
+            else
+                Texture::deactivateTextureUnit(TEXTURE_UNIT_ROUGHNESS);
+        }
+        
+        
+
+        // Normal
+        shader->setBool("material.useTextureNormal", useTextureNormal);
+        if (useTextureNormal)
+            textureNormal->bind(TEXTURE_UNIT_NORMAL);
+        else
+            Texture::deactivateTextureUnit(TEXTURE_UNIT_NORMAL);
+
+
+
+        // Height
+        shader->setBool("material.useTextureHeight", useTextureHeight);
+        if (useTextureHeight) {
+            textureHeight->bind(TEXTURE_UNIT_Height);
+            shader->setFloat("material.heightScale", heightScale);
+        }    
+        else
+            Texture::deactivateTextureUnit(TEXTURE_UNIT_Height);
+
+
+
+        // AO
+        shader->setFloat("material.ambientOcclusion", ambientOcclusion);
+        shader->setBool("material.useTextureAmbientOcclusion", useTextureAmbientOcclusion);
+        if (useTextureAmbientOcclusion)
+            textureAmbientOcclusion->bind(TEXTURE_UNIT_AMBIENT_OCCLUSION);
+        else
+            Texture::deactivateTextureUnit(TEXTURE_UNIT_AMBIENT_OCCLUSION);
+
+
+
+        // Emissive
+        shader->setVec3("material.emissive", emissive);
+        shader->setBool("material.useTextureEmissive", useTextureEmissive);
+        if (useTextureEmissive)
+            textureEmissive->bind(TEXTURE_UNIT_EMISSIVE);
+        else
+            Texture::deactivateTextureUnit(TEXTURE_UNIT_EMISSIVE);
+
+
+
+        shader->setVec2("uvMultiplier", uvMultiplier);
+    }
 
 };
