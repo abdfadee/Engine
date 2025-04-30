@@ -120,12 +120,14 @@ void main() {
 		metallic = metallicRoughness.b;
 		roughness = metallicRoughness.g;
 	}
-    if (material.useTextureMetallic) {
-		metallic = texture(material.textureMetallic, TexCoords).r;
-	}
-    if (material.useTextureRoughness) {
-		roughness = texture(material.textureRoughness, TexCoords).r;
-	}
+    else {
+        if (material.useTextureMetallic) {
+            metallic = texture(material.textureMetallic, TexCoords).r;
+        }
+        if (material.useTextureRoughness) {
+            roughness = texture(material.textureRoughness, TexCoords).r;
+        }
+    }
 
     // ambient occlusion
     float ao = material.ambientOcclusion;

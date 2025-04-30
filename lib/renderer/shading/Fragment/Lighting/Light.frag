@@ -169,11 +169,6 @@ void main() {
     // reflectance equation
     vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-    //float illuminated = 1.0 - OmnidirectionalShadowCalculation(pos,N,L);
-    // ambient lighting (note that the next IBL tutorial will replace 
-    // this ambient lighting with environment lighting).
-    //vec3 color = Lo * illuminated;
-
 
     float i = 1.0;
     if (light.type == 3) {
@@ -183,8 +178,18 @@ void main() {
         float i = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     }
 
+    float shadow = 0.0;
+    if (light.type == 1)
+        shadow = OmnidirectionalShadowCalculation(pos,N,L);
+    else
+        shadow = DirectionalShadowCalculation(pos,N);
+    shadow = 1.0 - shadow;
 
-    vec3 color = i * Lo;
+    // ambient lighting (note that the next IBL tutorial will replace 
+    // this ambient lighting with environment lighting).
+    vec3 ambient = vec3(0.03) * albedo * ( ao == 0.0 ? 1.0 : ao );
+
+    vec3 color = i * Lo * shadow + ambient;
     
     FragColor = vec4(color,1.0);
     //FragColor = vec4(1.0);

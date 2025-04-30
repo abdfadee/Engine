@@ -25,7 +25,8 @@ public:
         * IrradianceConvolution,
         * HDRPrefilter,
         * BRDF,
-        * IBL;
+        * IBL,
+        * GaussianBlur;
 
 
     inline static Mesh* screen, * unitBox;
@@ -33,24 +34,25 @@ public:
 
 
     static void compile() {
-        Basic = new Shader("lib/renderer/shading/Vertex/Basic.vert", "lib/renderer/shading/Fragment/Basic.frag");
+        Basic = new Shader("lib/renderer/shading/Vertex/Basic.vert", "lib/renderer/shading/Fragment/Other/Basic.frag");
 
-        Geometry = new Shader("lib/renderer/shading/Vertex/Geometry.vert", "lib/renderer/shading/Fragment/Geometry.frag");
-        Light = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/Light.frag");
+        Geometry = new Shader("lib/renderer/shading/Vertex/Geometry.vert", "lib/renderer/shading/Fragment/Lighting/Geometry.frag");
+        Light = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/Lighting/Light.frag");
         
-        DirectionalDepthMap = new Shader("lib/renderer/shading/Vertex/DepthMap.vert", "lib/renderer/shading/Fragment/DirectionalDepthMap.frag");
-        OmnidirectionalDepthMap = new Shader("lib/renderer/shading/Vertex/DepthMap.vert", "lib/renderer/shading/Fragment/OmnidirectionalDepthMap.frag", "lib/renderer/shading/Geometry/Omnidirectional.geom");
-        VisualizingDepth = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/VisualizingDepth.frag");
+        DirectionalDepthMap = new Shader("lib/renderer/shading/Vertex/DepthMap.vert", "lib/renderer/shading/Fragment/Shadow/DirectionalDepthMap.frag");
+        OmnidirectionalDepthMap = new Shader("lib/renderer/shading/Vertex/DepthMap.vert", "lib/renderer/shading/Fragment/Shadow/OmnidirectionalDepthMap.frag", "lib/renderer/shading/Geometry/Omnidirectional.geom");
+        VisualizingDepth = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/Other/VisualizingDepth.frag");
      
-        EquirectangularToCubemap = new Shader("lib/renderer/shading/Vertex/IBL.vert", "lib/renderer/shading/Fragment/EquirectangularToCubemap.frag");
-        IrradianceConvolution = new Shader("lib/renderer/shading/Vertex/IBL.vert", "lib/renderer/shading/Fragment/IrradianceConvolution.frag");
-        HDRPrefilter = new Shader("lib/renderer/shading/Vertex/IBL.vert", "lib/renderer/shading/Fragment/HDRPrefilter.frag");
-        BRDF = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/BRDF.frag");
-        IBL = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/IBL.frag");
+        EquirectangularToCubemap = new Shader("lib/renderer/shading/Vertex/IBL.vert", "lib/renderer/shading/Fragment/IBL/EquirectangularToCubemap.frag");
+        IrradianceConvolution = new Shader("lib/renderer/shading/Vertex/IBL.vert", "lib/renderer/shading/Fragment/IBL/IrradianceConvolution.frag");
+        HDRPrefilter = new Shader("lib/renderer/shading/Vertex/IBL.vert", "lib/renderer/shading/Fragment/IBL/HDRPrefilter.frag");
+        BRDF = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/IBL/BRDF.frag");
+        IBL = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/IBL/IBL.frag");
 
-        PostProcessing = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/PostProcessing.frag");
-        Skybox = new Shader("lib/renderer/shading/Vertex/Skybox.vert", "lib/renderer/shading/Fragment/Skybox.frag");
+        Skybox = new Shader("lib/renderer/shading/Vertex/Skybox.vert", "lib/renderer/shading/Fragment/Lighting/Skybox.frag");
+        PostProcessing = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/Tech/PostProcessing.frag");
 
+        GaussianBlur = new Shader("lib/renderer/shading/Vertex/PostProcessing.vert", "lib/renderer/shading/Fragment/Tech/GaussianBlur.frag");
 
         unitBox = new Mesh(new BoxGeometry(2, 2, 2));
         screen = new Mesh(new RectangleGeometry(2, 2));

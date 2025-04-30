@@ -44,7 +44,7 @@ public:
 		shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));
 
 		shader->setFloat("bias", shadow->bias);
-		shader->setInt("depthCubeMap", 4);
+		shader->setInt("depthCubeMap", TEXTURE_UNIT_DEPTH_CUBE);
 		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_DEPTH_CUBE);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, shadow->getDepthCubeMap());
 

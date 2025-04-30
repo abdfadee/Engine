@@ -16,8 +16,8 @@
 
 
 int main() {
-	GLFWwindow* window = initGL(800, 800);
-	Renderer renderer = Renderer(window,800,800);
+	GLFWwindow* window = initGL(1000, 1000);
+	Renderer renderer = Renderer(window,1000,1000);
 	Controls::initiliaze(window);
 
 
@@ -29,7 +29,7 @@ int main() {
 	Texture* metallic = Texture::T_2D( "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg");
 
 	Material* material = new Material(albedo,normal,displacment,NULL,roughness);
-	//material->uvMultiplier = vec2(30.0f,30.0f);
+	material->uvMultiplier = vec2(30.0f,30.0f);
 	
 	
 
@@ -37,22 +37,23 @@ int main() {
 	Object3D* space = new Object3D{};
 
 	Mesh* floor = new Mesh{
-		new BoxGeometry{2,2,2},
+		new BoxGeometry{100,100,0.1},
 		material
 	};
 	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
 
 
-	//Model* model = new Model("assets/models/helmet/DamagedHelmet.gltf", false);
-	//space->add(model);
+	Model* model = new Model("assets/models/m/scene.gltf", false);
+	model->translate(vec3(0, 10, 0));
+	space->add(model);
 
 	
 	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
 		100.0f,
-		25.0f
+		15.0f
 	);
 	l1->translate(vec3(0,10,0));
 	space->add(l1);
@@ -61,8 +62,8 @@ int main() {
 	RectAreaLight* l2 = new RectAreaLight(
 		vec3(1.0f),
 		1.0f,
-		20,
-		20,
+		50,
+		50,
 		20,
 		true
 	);
@@ -76,7 +77,7 @@ int main() {
 		50.0f,
 		radians(35.0f),
 		radians(15.0f),
-		40.0f
+		15.0f
 	);
 	l3->translate(vec3(0, 10, 0));
 	l3->rotate(vec3(radians(-90.0f),0,0));
@@ -96,28 +97,10 @@ int main() {
 
 
 	auto animationLoop = [&](float deltaTime) {
+		model->translate(vec3(0, deltaTime * -1, 0));
+
 		renderer.render(space,camera);
 
-
-		/*
-		glViewport(0, 0, 800, 800);
-		camera->updateViewProjectionMatrix();
-
-		Shaders::Skybox->use();
-		Shaders::Skybox->setMat4("mviewProjectionMatrix",camera->projection * mat4(mat3(camera->view)));
-		Shaders::Skybox->setInt("cube", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, Renderer::lighting->ibl->maps[0]);
-		Shaders::unitBox->render(Shaders::Skybox);
-		*/
-
-		/*
-		Shaders::PostProcessing->use();
-		Shaders::PostProcessing->setInt("buffer", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, maps[2]);
-		Shaders::screen->render(Shaders::PostProcessing);
-		*/
 	};
 
 	renderer.setAnimationLoop(animationLoop);

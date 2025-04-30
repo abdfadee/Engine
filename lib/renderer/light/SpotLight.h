@@ -74,8 +74,8 @@ class SpotLight : public Light{
 		shader->setMat4("model", worldMatrix);
 
 		shader->setMat4("light.viewProjectionMatrix", shadow->viewProjectionMatrix);
-		shader->setInt("depthMap", 4);
-		shader->setFloat("bias",shadow->bias);
+		shader->setFloat("bias", shadow->bias);
+		shader->setInt("depthMap", TEXTURE_UNIT_DEPTH);
 		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_DEPTH);
 		glBindTexture(GL_TEXTURE_2D, shadow->getDepthMap());
 

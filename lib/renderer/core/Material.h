@@ -30,7 +30,7 @@ public:
     vec2 uvMultiplier = vec2(1);
     glm::vec3 albedo = glm::vec3(1.0, 0, 0);
     float heightScale = 0.1f;
-    float metallic = 1.0f;
+    float metallic = 0.0f;
     float roughness = 0.0f;
     float ambientOcclusion = 1.0f;
     glm::vec3 emissive = glm::vec3(0.0, 0.0, 0.0);
