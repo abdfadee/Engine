@@ -13,23 +13,19 @@ using namespace glm;
 class Shaders {
 public:
     inline static Shader
-        *Basic,
-        *Geometry,
-        *PointLight,
-        *RectAreaLight,
-        *SpotLight,
-        *AmbientLight,
-        *PostProcessing,
-        *Skybox,
-        *DirectionalDepthMap,
-        *VisualizingDepth,
-        *OmnidirectionalDepthMap,
-        *EquirectangularToCubemap,
-        *IrradianceConvolution,
-        *HDRPrefilter,
-        *BRDF,
-        *IBL,
-        *GLTFGeometery;
+        * Basic,
+        * Geometry,
+        * Light,
+        * PostProcessing,
+        * Skybox,
+        * DirectionalDepthMap,
+        * VisualizingDepth,
+        * OmnidirectionalDepthMap,
+        * EquirectangularToCubemap,
+        * IrradianceConvolution,
+        * HDRPrefilter,
+        * BRDF,
+        * IBL;
 
 
     inline static Mesh* screen, * unitBox;
@@ -40,12 +36,7 @@ public:
         Basic = new Shader("lib/renderer/shading/Vertex/Basic.vert", "lib/renderer/shading/Fragment/Basic.frag");
 
         Geometry = new Shader("lib/renderer/shading/Vertex/Geometry.vert", "lib/renderer/shading/Fragment/Geometry.frag");
-        GLTFGeometery = new Shader("lib/renderer/shading/Vertex/Geometry.vert", "lib/renderer/shading/Fragment/GLTFGeometery.frag");
-
-        PointLight = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/PointLight.frag");
-        RectAreaLight = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/RectAreaLight.frag");
-        SpotLight = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/SpotLight.frag");
-        AmbientLight = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/AmbientLight.frag");
+        Light = new Shader("lib/renderer/shading/Vertex/Light.vert", "lib/renderer/shading/Fragment/Light.frag");
         
         DirectionalDepthMap = new Shader("lib/renderer/shading/Vertex/DepthMap.vert", "lib/renderer/shading/Fragment/DirectionalDepthMap.frag");
         OmnidirectionalDepthMap = new Shader("lib/renderer/shading/Vertex/DepthMap.vert", "lib/renderer/shading/Fragment/OmnidirectionalDepthMap.frag", "lib/renderer/shading/Geometry/Omnidirectional.geom");
@@ -68,10 +59,7 @@ public:
 
     static void bind() {
         Geometry->bindBlock("View",0);
-        PointLight->bindBlock("View", 0);
-        RectAreaLight->bindBlock("View", 0);
-        SpotLight->bindBlock("View", 0);
-        SpotLight->bindBlock("View", 0);
+        
     }
 
 

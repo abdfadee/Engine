@@ -21,8 +21,6 @@ int main() {
 	Controls::initiliaze(window);
 
 
-	
-	Texture* t = Texture::T_2D("assets/2D/brickwall.jpg");
 
 	Texture* albedo = Texture::T_2D("assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" ,true);
 	Texture* normal = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_NormalGL.jpg");
@@ -31,33 +29,33 @@ int main() {
 	Texture* metallic = Texture::T_2D( "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg");
 
 	Material* material = new Material(albedo,normal,displacment,NULL,roughness);
-	float uRepeat = 30.0f , vRepeat = 30.0f;
+	//material->uvMultiplier = vec2(30.0f,30.0f);
 	
 	
 
-
+	 
 	Object3D* space = new Object3D{};
 
 	Mesh* floor = new Mesh{
-		new BoxGeometry{1,1,1},
+		new BoxGeometry{2,2,2},
 		material
 	};
 	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
 
 
-	//Model* model = new Model("assets/models/m/scene.gltf", false);
+	//Model* model = new Model("assets/models/helmet/DamagedHelmet.gltf", false);
 	//space->add(model);
 
 	
-	/*
+	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
 		100.0f,
 		25.0f
 	);
 	l1->translate(vec3(0,10,0));
-	//space->add(l1);
+	space->add(l1);
 	
 	
 	RectAreaLight* l2 = new RectAreaLight(
@@ -84,7 +82,7 @@ int main() {
 	l3->rotate(vec3(radians(-90.0f),0,0));
 	//l3->rotate(vec3(0, 0, radians(-30.0f)));
 	//space->add(l3);
-	*/
+	
 
 
 
@@ -94,7 +92,7 @@ int main() {
 	//space->add(camera);
 
 
-	Renderer::lighting->ibl->generateMaps(Texture::T_HDRI("assets/HDRI/container_free_Ref.hdr"));
+	renderer.ibl->generateMaps(Texture::T_HDRI("assets/HDRI/container_free_Ref.hdr"));
 
 
 	auto animationLoop = [&](float deltaTime) {

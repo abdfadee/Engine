@@ -21,7 +21,7 @@ public:
     virtual void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
 		if (!geometeryPass) return;
 		worldMatrix = parentMatrix * getLocalMatrix();
-		Renderer::lighting->pointLights.push_back(this);
+		Renderer::lights.push_back(this);
 
 		position = getWorldPosition();
     }
@@ -32,6 +32,7 @@ public:
 		
 		shader->setVec3("light.position", position);
 		shader->setFloat("light.radius", radius);
+		shader->setInt("light.type", 1);
 		
 		float dist = length(position - viewPos);
 		if (dist <= radius)
@@ -44,13 +45,14 @@ public:
 
 		shader->setFloat("bias", shadow->bias);
 		shader->setInt("depthCubeMap", 4);
-		glActiveTexture(GL_TEXTURE4);
+		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_DEPTH_CUBE);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, shadow->getDepthCubeMap());
 
 		draw();
 	}
 
 	void updateShadow(Object3D* root) {
+		Shaders::OmnidirectionalDepthMap->use();
 		shadow->updateDepthCubeMap(position,root);
 	}
 

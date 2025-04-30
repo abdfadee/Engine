@@ -8,6 +8,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
+uniform sampler2D gEmissive;
 
 // IBL
 uniform samplerCube irradianceMap;
@@ -42,6 +43,7 @@ void main() {
     float roughness = material.r;
     float metallic  = material.g;
     float ao        = material.b;
+    vec3 emissive = texture(gEmissive, TexCoords).rgb;
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
@@ -66,7 +68,7 @@ void main() {
 
     vec3 ambient = (kD * diffuse + specular);
     
-    FragColor = vec4(ambient,1.0); 
+    FragColor = vec4(ambient + emissive ,1.0); 
     //FragColor = vec4(diffuse,1.0); 
     //FragColor = vec4(texture(prefilterMap, N).rgb,1.0); 
     //FragColor = vec4(texture(brdfLUT, TexCoords).rgb,1.0); 

@@ -40,7 +40,7 @@ class SpotLight : public Light{
 		direction = normalize(directionMatrix * vec3(0, -1, 0));
 		up = normalize(directionMatrix * vec3(0, 0, -1));
 
-		Renderer::lighting->spotLights.push_back(this);
+		Renderer::lights.push_back(this);
 	}
 
 
@@ -63,6 +63,7 @@ class SpotLight : public Light{
 		}
 
 		
+		shader->setInt("light.type", 3);
 		shader->setVec3("light.position", position);
 		shader->setVec3("light.direction", direction);
 		shader->setFloat("light.distance", distance);
@@ -75,7 +76,7 @@ class SpotLight : public Light{
 		shader->setMat4("light.viewProjectionMatrix", shadow->viewProjectionMatrix);
 		shader->setInt("depthMap", 4);
 		shader->setFloat("bias",shadow->bias);
-		glActiveTexture(GL_TEXTURE4);
+		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_DEPTH);
 		glBindTexture(GL_TEXTURE_2D, shadow->getDepthMap());
 
 		draw();
@@ -83,6 +84,7 @@ class SpotLight : public Light{
 
 
 	void updateShadow(Object3D* root) {
+		Shaders::DirectionalDepthMap->use();
 		shadow->updateDepthMap(position, direction, up, root);
 	}
 

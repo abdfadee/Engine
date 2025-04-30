@@ -17,8 +17,7 @@ public:
 
 
 	virtual void bind(Shader *shader,vec3 &viewPos) {
-		shader->setVec3("light.color", color);
-		shader->setFloat("light.intensity",intensity);
+		shader->setVec3("light.color", color * intensity);
 	}
 
 	virtual void updateShadow(Object3D* root) {}

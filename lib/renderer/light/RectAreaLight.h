@@ -40,7 +40,7 @@ public:
 		axes[1] = normalize(directionMatrix * vec3(0, 1, 0));
 		axes[2] = normalize(directionMatrix * vec3(0, 0, -1));
 
-		Renderer::lighting->rectAreaLights.push_back(this);
+		Renderer::lights.push_back(this);
 	}
 
 
@@ -59,6 +59,7 @@ public:
 			}
 		}
 
+		shader->setInt("light.type", 2);
 		shader->setBool("light.unified", unified);
 		shader->setVec3("light.position", position);
 		shader->setVec3("light.center", center);
@@ -75,7 +76,7 @@ public:
 		shader->setMat4("light.viewProjectionMatrix", shadow->viewProjectionMatrix);
 		shader->setInt("depthMap", 4);
 		shader->setFloat("bias", shadow->bias);
-		glActiveTexture(GL_TEXTURE4);
+		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_DEPTH);
 		glBindTexture(GL_TEXTURE_2D, shadow->getDepthMap());
 
 		draw();
@@ -83,6 +84,7 @@ public:
 
 
 	void updateShadow(Object3D* root) {
+		Shaders::DirectionalDepthMap->use();
 		shadow->updateDepthMap(position, axes[2], axes[1], root);
 	}
 
