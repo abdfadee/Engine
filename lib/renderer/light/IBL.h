@@ -10,7 +10,7 @@ class IBL {
     unsigned int captureFBO, captureRBO;
     glm::mat4 viewProjectionMatrix[6];
 
-    GLuint HDRToEnv(GLuint hdrTexture, GLuint width = 2000, GLuint height = 2000) {
+    GLuint HDRToEnv(GLuint hdrTexture, GLuint width = 2048, GLuint height = 2048) {
         // pbr: setup cubemap to render to and attach to framebuffer
         // ---------------------------------------------------------
         unsigned int envCubemap;
@@ -101,7 +101,7 @@ class IBL {
     }
 
 
-    GLuint preFilter(GLuint envCubemap, GLuint width = 128, GLuint height = 128, GLuint maxMipLevels = 5) {
+    GLuint preFilter(GLuint envCubemap, GLuint width = 256, GLuint height = 256, GLuint maxMipLevels = 5) {
         // pbr: create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale.
     // --------------------------------------------------------------------------------
         unsigned int prefilterMap;
@@ -153,7 +153,7 @@ class IBL {
     }
 
 
-    GLuint generateBRDFLUT(GLuint width = 512, GLuint height = 512) {
+    GLuint generateBRDFLUT(GLuint width = 2048, GLuint height = 2048) {
         // pbr: generate a 2D LUT from the BRDF equations used.
         // ----------------------------------------------------
         unsigned int brdfLUTTexture;

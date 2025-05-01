@@ -15,7 +15,8 @@ uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
-out vec4 FragColor;
+out layout (location = 0) vec4 FragColor;
+out layout (location = 1) vec4 BrightColor;
 
 
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
@@ -30,11 +31,9 @@ void main() {
     
     if (pos == vec3(0)) {
         FragColor = vec4(vec3(texture(gAlbedo,TexCoords)),1.0);
-        return;
     }
-    
-    
-    // Screen Space To World
+    else {
+        // Screen Space To World
     vec3 V = normalize(viewPos - pos);
     vec3 N = texture(gNormal, TexCoords).rgb;
     vec3 R = reflect(-V, N); 
@@ -66,10 +65,19 @@ void main() {
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    vec3 ambient = (kD * diffuse + specular);
+    vec3 ambient = (kD * diffuse + specular) * ( ao == 0.0 ? 1.0 : ao );
     
     FragColor = vec4(ambient + emissive ,1.0); 
     //FragColor = vec4(diffuse,1.0); 
     //FragColor = vec4(texture(prefilterMap, N).rgb,1.0); 
     //FragColor = vec4(texture(brdfLUT, TexCoords).rgb,1.0); 
+    }
+
+
+    // check whether fragment output is higher than threshold, if so output as brightness color
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        BrightColor = vec4(FragColor.rgb, 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

@@ -11,6 +11,7 @@
 #include "lib/renderer/model/Model.h";
 #include "light/Light.h";
 #include "light/IBL.h";
+#include "technique/GaussianBlur.h";
 
 
 const int TEXTURE_UNIT_SKYBOX = 0;
@@ -31,6 +32,8 @@ public:
 	FrameBuffer* gBuffer , *lBuffer;
 	GLFWwindow* window;
 	IBL* ibl;
+	GaussianBlur* gaussianBlur;
+	
 	vec2 pixelSize;
 	double deltaTime, currentFrameTime, lastFrameTime;
 
@@ -40,7 +43,7 @@ public:
 
 public:
 	Renderer (GLFWwindow* window , GLuint width , GLuint height) : 
-		window(window) , ibl(new IBL()) {
+		window(window) , ibl(new IBL()) , gaussianBlur(new GaussianBlur(width, height)) {
 		Shaders::compile();
 		Shaders::bind();
 		Renderer::width = width;
@@ -48,19 +51,22 @@ public:
 
 		pixelSize = vec2(1.0f / width, 1.0f / height);
 
-		gBuffer = new FrameBuffer(width, height,GL_DEPTH_COMPONENT24, {
+		gBuffer = new FrameBuffer(width, height,GL_DEPTH_COMPONENT32, {
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Position Buffer
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Normal Buffer 
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Color Buffer 
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Material Buffer 
 			{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},	// Emissive Buffer 
 		});
-		lBuffer = new FrameBuffer(width, height, GL_DEPTH_COMPONENT24, {
-				{GL_RGBA16F,GL_NEAREST,GL_CLAMP_TO_EDGE}
+		lBuffer = new FrameBuffer(width, height, GL_DEPTH_COMPONENT32, {
+				{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE},
+				{GL_RGB16F,GL_NEAREST,GL_CLAMP_TO_EDGE}
 		});
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
+
+
 
 
 	void render(Object3D* root, Camera* camera) {
@@ -70,7 +76,9 @@ public:
 		vec3 viewPos = camera->getWorldPosition();
 
 
-		// Geometery Pass
+
+
+		/* Geometery Pass */
 		gBuffer->bind();
 
 
@@ -83,6 +91,7 @@ public:
 		Shaders::unitBox->render(Shaders::Skybox);
 
 
+		// Rendering
 		glEnable(GL_DEPTH_TEST);
 		Shaders::Geometry->use();
 		Shaders::Geometry->setVec3("viewPos",viewPos);
@@ -94,12 +103,12 @@ public:
 		Shaders::Geometry->setInt("material.textureRoughness", TEXTURE_UNIT_ROUGHNESS);
 		Shaders::Geometry->setInt("material.textureAmbientOcclusion", TEXTURE_UNIT_AMBIENT_OCCLUSION);
 		Shaders::Geometry->setInt("material.textureEmissive", TEXTURE_UNIT_EMISSIVE);
-
 		root->render(Shaders::Geometry,mat4(1.0f),true,true);
 
 
+
 		
-		// Shadow Pass
+		/* Shadow Pass */
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(2.0f, 4.0f); // tweak these
@@ -111,17 +120,20 @@ public:
 
 
 
-		// Light Pass
-		lBuffer->bind();
 
+		/* Light Pass */
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);
+
+		lBuffer->bind();
 		for (int i = 0; i < gBuffer->buffers.size() ; ++i) {
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, gBuffer->buffers[i]);
 		}
 
+
+		// Lights
 		Shaders::Light->use();
 		Shaders::Light->setVec3("viewPos", viewPos);
 		Shaders::Light->setVec2("pixelSize", pixelSize);
@@ -138,9 +150,8 @@ public:
 		glDisable(GL_CULL_FACE);
 		lights.clear();
 
-
-
 		
+		// IBL
 		Shaders::IBL->use();
 		Shaders::IBL->setVec3("viewPos", viewPos);
 		Shaders::IBL->setVec2("pixelSize", pixelSize);
@@ -158,22 +169,35 @@ public:
 		glBindTexture(GL_TEXTURE_CUBE_MAP, ibl->maps[2]);
 		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_BRDF);
 		glBindTexture(GL_TEXTURE_2D, ibl->maps[3]);
-		//Shaders::screen->render(Shaders::IBL);
+		Shaders::screen->render(Shaders::IBL);
 		
 
 
 
-		// PostProcessing
+		/* PostProcessing */
 		glDisable(GL_BLEND);
 		glDisable(GL_CULL_FACE);
+
+		
+		// GaussianBlur
+		GLuint blured = gaussianBlur->blur(lBuffer->buffers[1], 10);
+
+
+		// HDR + Bloom
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
 		Shaders::PostProcessing->use();
-		Shaders::PostProcessing->setInt("buffer", 0);
+		Shaders::PostProcessing->setInt("scene", 0);
+		Shaders::PostProcessing->setInt("blur", 1);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, lBuffer->buffers[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, blured);
 		Shaders::screen->render(Shaders::PostProcessing);
+
+
 
 
 		/*
@@ -188,6 +212,8 @@ public:
 		*/
 		
 	}
+
+
 
 
 	void setAnimationLoop(std::function<void(float)> animationLoop) {

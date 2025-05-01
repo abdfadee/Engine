@@ -1,13 +1,8 @@
 #include <iostream>
-#include <chrono>
-#include <thread>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include "lib/renderer/initiliaze.h"
 #include "lib/renderer/renderer.h"
 #include "lib/renderer/view/PerspectiveCamera.h"
 #include "lib/renderer/geometry/BoxGeometry.h"
-#include "lib/renderer/geometry/ConeGeometry.h"
 #include "lib/renderer/texture/Texture.h"
 #include "lib/renderer/light/PointLight.h"
 #include "lib/renderer/light/RectAreaLight.h"
@@ -44,8 +39,9 @@ int main() {
 	space->add(floor);
 
 
-	Model* model = new Model("assets/models/m/scene.gltf", false);
-	model->translate(vec3(0, 10, 0));
+	Model* model = new Model("assets/models/h/adamHead.gltf", false);
+	model->scale(vec3(10));
+	model->translate(vec3(0, 3, 0));
 	space->add(model);
 
 	
@@ -56,7 +52,7 @@ int main() {
 		15.0f
 	);
 	l1->translate(vec3(0,10,0));
-	space->add(l1);
+	//space->add(l1);
 	
 	
 	RectAreaLight* l2 = new RectAreaLight(
@@ -93,13 +89,12 @@ int main() {
 	//space->add(camera);
 
 
-	renderer.ibl->generateMaps(Texture::T_HDRI("assets/HDRI/container_free_Ref.hdr"));
+	renderer.ibl->generateMaps(Texture::T_HDRI("assets/HDRI/overcast_soil_puresky_4k.hdr"));
 
 
 	auto animationLoop = [&](float deltaTime) {
-		model->translate(vec3(0, deltaTime * -1, 0));
-
 		renderer.render(space,camera);
+
 
 	};
 
