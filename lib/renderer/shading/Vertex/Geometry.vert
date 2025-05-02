@@ -14,6 +14,7 @@ uniform mat4 finalBonesMatrices[MAX_BONES];
 layout(std140) uniform View {
     mat4 viewProjectionMatrix;
 };
+uniform mat4 baseMatrix;
 uniform mat4 model;
 uniform mat3 normalMatrix;
 uniform vec2 uvMultiplier = vec2(1.0);
@@ -31,26 +32,21 @@ void main() {
     vec3 skinnedBitangent = aBitangent;
 
     // Apply skinning only if bone influences exist
+    mat4 boneTransform;
     if (boneIds[0] != -1) {
-        skinnedPosition = vec4(0.0);
-        skinnedNormal = vec3(0.0);
-        skinnedTangent = vec3(0.0);
-        skinnedBitangent = vec3(0.0);
-
+        boneTransform = mat4(0.0);
         for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
-            if (boneIds[i] == -1 || boneIds[i] >= MAX_BONES) 
-                continue;
-
-            float weight = weights[i];
-            mat4 boneTransform = finalBonesMatrices[boneIds[i]];
-            mat3 normalTransform = transpose(inverse(mat3(boneTransform)));
-
-            skinnedPosition += (boneTransform * vec4(aPosition, 1.0)) * weight;
-            skinnedNormal += normalTransform * aNormal * weight;
-            skinnedTangent += normalTransform * aTangent * weight;
-            skinnedBitangent += normalTransform * aBitangent * weight;
+            boneTransform += finalBonesMatrices[boneIds[i]] * weights[i];
         }
     }
+    else {
+        boneTransform = baseMatrix;
+    }
+    mat3 normalTransform = transpose(inverse(mat3(boneTransform)));
+    skinnedPosition = boneTransform * vec4(aPosition, 1.0);
+    skinnedNormal = normalTransform * aNormal;
+    skinnedTangent = normalTransform * aTangent;
+    skinnedBitangent = normalTransform * aBitangent;
 
     skinnedNormal = normalize(skinnedNormal);
     skinnedTangent = normalize(skinnedTangent);

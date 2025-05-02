@@ -11,24 +11,22 @@
 #include "../texture/stbloader.h"
 #include "../texture/Texture.h"
 #include "../shading/Shader.h"
-#include "../animation/BoneInfo.h"
-#include "../animation/Animation.h"
 #include "../utility/Helpers.h"
+#include "BoneInfo.h"
 
 
 
 class Model : public Object3D {
-private:
+public:
     // data
     std::string directory;
+    vector<Mesh> meshes;
     std::map<std::string, Texture*> texturesLoaded;
     std::map<string, BoneInfo> m_BoneInfoMap;
     int m_BoneCounter = 0;
-    std::vector<glm::mat4> *finalBonesMatrices = new std::vector<glm::mat4>;
+    vector<glm::mat4> Transforms;
+    glm::mat4 m_GlobalInverseTransform = glm::mat4(1);
 
-
-public:
-    vector<Animation*> animations;
 
     Model(std::string path , bool flipTexturesVertically = true) {
         loadModel(path, flipTexturesVertically);
@@ -36,19 +34,21 @@ public:
 
 
     void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
-        for (int i = 0; i < finalBonesMatrices->size(); ++i) {
-            shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", (*finalBonesMatrices)[i]);
-        }
-
         Object3D::render(shader, parentMatrix,materialize,geometeryPass);
+
+        for (int i = 0; i < Transforms.size(); ++i)
+            shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", Transforms[i]);
+
+        for (unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].render(shader,worldMatrix,materialize,geometeryPass);
     }
 
 
-private:
+
     void loadModel(std::string path , bool flipTexturesVertically) {
         Assimp::Importer importer;
         stbi_set_flip_vertically_on_load(flipTexturesVertically);
-        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             std::cout << "Error loading model: " << importer.GetErrorString() << std::endl;
@@ -56,40 +56,44 @@ private:
 
         directory = path.substr(0, path.find_last_of('/'));
 
-        add(processNode(scene->mRootNode, scene));
+        m_GlobalInverseTransform = AssimpGLMHelpers::ConvertMatrixToGLMFormat(scene->mRootNode->mTransformation);
+        m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
 
-        finalBonesMatrices->reserve(100);
-        for (int i = 0; i < 100; i++)
-            finalBonesMatrices->push_back(glm::mat4(1.0f));
+        // process ASSIMP's root node recursively
+        processNode(scene->mRootNode, scene, m_GlobalInverseTransform);
 
-        for (int i = 0; i < scene->mNumAnimations; ++i)
-            animations.push_back(new Animation(scene, i, m_BoneInfoMap, m_BoneCounter, finalBonesMatrices));
+        GetBoneTransforms(scene,Transforms);
 
         stbi_set_flip_vertically_on_load(true);
     }
 
 
     // recursively load all meshes in the node tree
-    Object3D* processNode(aiNode* node, const aiScene* scene) {
-        Object3D* node3D = new Object3D();;
-
-        // process all of this node's meshes if it has any
-        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+    void processNode(aiNode* node, const aiScene* scene , glm::mat4 parentNodeMatrix)
+    {
+        mat4 transform = parentNodeMatrix * AssimpGLMHelpers::ConvertMatrixToGLMFormat(node->mTransformation);
+        // process each mesh located at the current node
+        for (unsigned int i = 0; i < node->mNumMeshes; i++)
+        {
+            // the node object only contains indices to index the actual objects in the scene. 
+            // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            node3D->add(processMesh(mesh, scene));
+            Mesh m = processMesh(mesh, scene);
+            m.baseMatrix = transform;
+            meshes.push_back(m);
+        }
+        // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
+        for (unsigned int i = 0; i < node->mNumChildren; i++)
+        {
+            processNode(node->mChildren[i], scene, transform);
         }
 
-        // continue with children
-        for (unsigned int i = 0; i < node->mNumChildren; i++) {
-            node3D->add(processNode(node->mChildren[i], scene));
-        }
-
-        return node3D;
     }
 
 
+
 	// convert assimp mesh to our own mesh class
-    Mesh* processMesh(aiMesh* mesh, const aiScene* scene) {
+    Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
         Geometry* geometery = new Geometry();
 
         // vertices
@@ -212,34 +216,33 @@ private:
         }
 
         ExtractBoneWeightForVertices(geometery->vertices, mesh, scene);
+        /*
+        for (int i = 0; i < geometery->vertices.size(); ++i) {
+            cout << endl;
 
-        return new Mesh(geometery , material);
+            Vertex vertex = geometery->vertices[i];
+            for (int j = 0 ;j < MAX_BONE_INFLUENCE; ++j)
+                cout << vertex.m_BoneIDs[j] << ":" << vertex.m_Weights << " , ";
+
+            cout << endl;
+        }
+        */
+        return Mesh(geometery , material);
     }
 
 
-	// loads the first texture of given type
-    Texture* loadMaterialTexture(aiMaterial* material, aiTextureType type) {
-        aiString path;
-        material->GetTexture(type, 0, &path);
-
-        // check if we already have it loaded and use that if so
-        auto iterator = texturesLoaded.find(std::string(path.C_Str()));
-        if (iterator != texturesLoaded.end()) {
-            return iterator->second;
+    void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+    {
+        for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+        {
+            if (vertex.m_BoneIDs[i] < 0)
+            {
+                vertex.m_Weights[i] = weight;
+                vertex.m_BoneIDs[i] = boneID;
+                return;
+            }
         }
-
-        std::cout << "Process material: " << path.C_Str() << std::endl;
-
-        std::string fullPath = directory + '/' + path.C_Str();
-        bool gamma = false;
-        if (type == aiTextureType_DIFFUSE)
-            gamma = true;
-        Texture* texture = Texture::T_2D(fullPath,gamma);
-
-        // cache it for future lookups
-        texturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
-
-        return texture;
+        //assert("More Bones Required");
     }
 
 
@@ -256,7 +259,7 @@ private:
             {
                 BoneInfo newBoneInfo;
                 newBoneInfo.id = boneCount;
-                newBoneInfo.offset = ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+                newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
                 boneInfoMap[boneName] = newBoneInfo;
                 boneID = boneCount;
                 boneCount++;
@@ -279,17 +282,65 @@ private:
         }
     }
 
-    void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+
+    // loads the first texture of given type
+    Texture* loadMaterialTexture(aiMaterial* material, aiTextureType type) {
+        aiString path;
+        material->GetTexture(type, 0, &path);
+
+        // check if we already have it loaded and use that if so
+        auto iterator = texturesLoaded.find(std::string(path.C_Str()));
+        if (iterator != texturesLoaded.end()) {
+            return iterator->second;
+        }
+
+        std::cout << "Process material: " << path.C_Str() << std::endl;
+
+        std::string fullPath = directory + '/' + path.C_Str();
+        bool gamma = false;
+        if (type == aiTextureType_DIFFUSE)
+            gamma = true;
+        Texture* texture = Texture::T_2D(fullPath, gamma);
+
+        // cache it for future lookups
+        texturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
+
+        return texture;
+    }
+
+
+    void GetBoneTransforms(const aiScene* pScene, vector<glm::mat4>& Transforms)
     {
-        for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
-        {
-            if (vertex.m_BoneIDs[i] < 0)
-            {
-                vertex.m_Weights[i] = weight;
-                vertex.m_BoneIDs[i] = boneID;
-                break;
-            }
+        Transforms.resize(m_BoneInfoMap.size());
+
+        ReadNodeHierarchy(pScene->mRootNode, glm::mat4(1.0f));
+
+        // Iterate over values using range-based for loop
+        uint i = 0;
+        for (const auto& pair : m_BoneInfoMap) {
+            Transforms[i] = pair.second.finalTransformation;
+            ++i;
         }
     }
 
+    void ReadNodeHierarchy(const aiNode* pNode, const glm::mat4& ParentTransform)
+    {
+        string NodeName(pNode->mName.data);
+
+        mat4 NodeTransformation(AssimpGLMHelpers::ConvertMatrixToGLMFormat(pNode->mTransformation));
+
+        mat4 GlobalTransformation = ParentTransform * NodeTransformation;
+
+        if (m_BoneInfoMap.find(NodeName) != m_BoneInfoMap.end()) {
+            uint BoneIndex = m_BoneInfoMap[NodeName].id;
+            m_BoneInfoMap[NodeName].finalTransformation = m_GlobalInverseTransform * GlobalTransformation * m_BoneInfoMap[NodeName].offset;
+        }
+
+        for (uint i = 0; i < pNode->mNumChildren; i++) {
+            ReadNodeHierarchy(pNode->mChildren[i], GlobalTransformation);
+        }
+    }
+
+    auto& GetBoneInfoMap() { return m_BoneInfoMap; }
+    int& GetBoneCount() { return m_BoneCounter; }
 };

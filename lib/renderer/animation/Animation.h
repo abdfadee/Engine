@@ -3,10 +3,12 @@
 #include <map>
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #include <functional>
 #include "Bone.h"
-#include "BoneInfo.h"
-#include "../utility/Helpers.h"
+#include "../model/BoneInfo.h"
+#include "../model/Model.h"
 
 
 
@@ -21,20 +23,20 @@ struct AssimpNodeData
 class Animation
 {
 public:
-	std::vector<glm::mat4>* finalBonesMatrices;
-
 	Animation() = default;
 
-	Animation(const aiScene* scene , unsigned int index , std::map<string, BoneInfo>& boneInfoMap, int boneCount , std::vector<glm::mat4>* finalBonesMatrices)
+	Animation(const std::string& animationPath, Model* model)
 	{
-		aiAnimation* animation = scene->mAnimations[index];
+		Assimp::Importer importer;
+		const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
+		assert(scene && scene->mRootNode);
+		auto animation = scene->mAnimations[0];
 		m_Duration = animation->mDuration;
 		m_TicksPerSecond = animation->mTicksPerSecond;
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHierarchyData(m_RootNode, scene->mRootNode);
-		ReadMissingBones(animation,boneInfoMap,boneCount);
-		this->finalBonesMatrices = finalBonesMatrices;
+		ReadMissingBones(animation, *model);
 	}
 
 	~Animation()
@@ -63,9 +65,12 @@ public:
 	}
 
 private:
-	void ReadMissingBones(const aiAnimation* animation, std::map<string, BoneInfo>& boneInfoMap, int boneCount)
+	void ReadMissingBones(const aiAnimation* animation, Model& model)
 	{
 		int size = animation->mNumChannels;
+
+		auto& boneInfoMap = model.GetBoneInfoMap();//getting m_BoneInfoMap from Model class
+		int& boneCount = model.GetBoneCount(); //getting the m_BoneCounter from Model class
 
 		//reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)
@@ -90,7 +95,7 @@ private:
 		assert(src);
 
 		dest.name = src->mName.data;
-		dest.transformation = ConvertMatrixToGLMFormat(src->mTransformation);
+		dest.transformation = AssimpGLMHelpers::ConvertMatrixToGLMFormat(src->mTransformation);
 		dest.childrenCount = src->mNumChildren;
 
 		for (int i = 0; i < src->mNumChildren; i++)

@@ -8,6 +8,8 @@
 #include "lib/renderer/light/PointLight.h"
 #include "lib/renderer/light/RectAreaLight.h"
 #include "lib/renderer/light/SpotLight.h"
+#include "lib/renderer/model/Model.h"
+#include "lib/renderer/animation/Animation.h"
 #include "lib/renderer/animation/Animator.h"
 
 
@@ -51,13 +53,17 @@ int main() {
 
 	Model* fire = new Model("assets/models/k/scene.gltf", false);
 	fire->scale(vec3(1));
-	//fire->rotate(vec3(radians(-90.0f), 0, 0));
+	fire->rotate(vec3(radians(-90.0f), 0, 0));
 	//fire->translate(vec3(5, 2, 0));
 	fire->translate(vec3(0, 0.5, 0));
 	space->add(fire);
 
-	Animator animator(fire->animations[1]);
-	animator.SetLooping(true);
+	//cout << fire->m_BoneInfoMap.size() << endl;
+
+
+	Animation animation("assets/models/k/scene.gltf", fire);
+	Animator animator(&animation);
+
 	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
@@ -106,10 +112,15 @@ int main() {
 
 
 	auto animationLoop = [&](float deltaTime) {
-		renderer.render(space,camera);
-
+		
 		animator.UpdateAnimation(deltaTime);
+		auto transforms = animator.GetFinalBoneMatrices();
+		for (int i = 0; i < transforms.size(); ++i)
+			transforms[i] = fire->m_GlobalInverseTransform * transforms[i];
+		fire->Transforms = transforms;
+		
 
+		renderer.render(space,camera);
 	};
 
 	renderer.setAnimationLoop(animationLoop);

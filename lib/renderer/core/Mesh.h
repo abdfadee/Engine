@@ -18,6 +18,8 @@
 class Mesh : public Object3D {
 public:
     unsigned int VAO, VBO, EBO;
+    mat4 baseMatrix = mat4(1.0f);
+    std::string name;
     Material* material;
     Geometry* geometry;
 
@@ -75,6 +77,7 @@ public:
         if (materialize)
             material->bind(shader);
 
+        shader->setMat4("baseMatrix", baseMatrix);
         shader->setMat4("model", worldMatrix);
         shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));
         draw();
