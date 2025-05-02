@@ -109,7 +109,9 @@ void main() {
     // albedo
     FragColor = material.albedo;
     if (material.useTextureAlbedo) {
-		FragColor = texture(material.textureAlbedo, TexCoords).rgb;
+        vec4 albedo = texture(material.textureAlbedo, TexCoords);
+        if (albedo.w < 0.1) discard;
+		FragColor = albedo.rgb;
 	}
 
     // metallic/roughness

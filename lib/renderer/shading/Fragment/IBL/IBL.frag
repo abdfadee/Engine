@@ -31,6 +31,7 @@ void main() {
     
     if (pos == vec3(0)) {
         FragColor = vec4(vec3(texture(gAlbedo,TexCoords)),1.0);
+        return;
     }
     else {
         // Screen Space To World

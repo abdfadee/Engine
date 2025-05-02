@@ -11,6 +11,9 @@
 #include "../texture/stbloader.h"
 #include "../texture/Texture.h"
 #include "../shading/Shader.h"
+#include "../animation/BoneInfo.h"
+#include "../animation/Animation.h"
+#include "../utility/Helpers.h"
 
 
 
@@ -19,17 +22,25 @@ private:
     // data
     std::string directory;
     std::map<std::string, Texture*> texturesLoaded;
-    Material* materialOverride;
+    std::map<string, BoneInfo> m_BoneInfoMap;
+    int m_BoneCounter = 0;
+    std::vector<glm::mat4> *finalBonesMatrices = new std::vector<glm::mat4>;
 
 
 public:
+    vector<Animation*> animations;
+
     Model(std::string path , bool flipTexturesVertically = true) {
         loadModel(path, flipTexturesVertically);
     }
 
 
-    Model(std::string path, Material* material, bool flipTexturesVertically) : materialOverride(material) {
-        loadModel(path, flipTexturesVertically);
+    void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
+        for (int i = 0; i < finalBonesMatrices->size(); ++i) {
+            shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", (*finalBonesMatrices)[i]);
+        }
+
+        Object3D::render(shader, parentMatrix,materialize,geometeryPass);
     }
 
 
@@ -45,23 +56,35 @@ private:
 
         directory = path.substr(0, path.find_last_of('/'));
 
-        processNode(scene->mRootNode, scene);
+        add(processNode(scene->mRootNode, scene));
+
+        finalBonesMatrices->reserve(100);
+        for (int i = 0; i < 100; i++)
+            finalBonesMatrices->push_back(glm::mat4(1.0f));
+
+        for (int i = 0; i < scene->mNumAnimations; ++i)
+            animations.push_back(new Animation(scene, i, m_BoneInfoMap, m_BoneCounter, finalBonesMatrices));
+
         stbi_set_flip_vertically_on_load(true);
     }
 
 
     // recursively load all meshes in the node tree
-    void processNode(aiNode* node, const aiScene* scene) {
+    Object3D* processNode(aiNode* node, const aiScene* scene) {
+        Object3D* node3D = new Object3D();;
+
         // process all of this node's meshes if it has any
         for (unsigned int i = 0; i < node->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            add(processMesh(mesh, scene));
+            node3D->add(processMesh(mesh, scene));
         }
 
         // continue with children
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
-            processNode(node->mChildren[i], scene);
+            node3D->add(processNode(node->mChildren[i], scene));
         }
+
+        return node3D;
     }
 
 
@@ -130,11 +153,6 @@ private:
         // material
         Material* material = new Material();
 
-        if (materialOverride) {
-            material = materialOverride;
-            return new Mesh(geometery, material);
-        }
-
         if (mesh->mMaterialIndex >= 0) {
             aiMaterial* aiMaterial = scene->mMaterials[mesh->mMaterialIndex];
 
@@ -193,6 +211,8 @@ private:
             }
         }
 
+        ExtractBoneWeightForVertices(geometery->vertices, mesh, scene);
+
         return new Mesh(geometery , material);
     }
 
@@ -221,4 +241,55 @@ private:
 
         return texture;
     }
+
+
+    void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+    {
+        auto& boneInfoMap = m_BoneInfoMap;
+        int& boneCount = m_BoneCounter;
+
+        for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+        {
+            int boneID = -1;
+            std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+            if (boneInfoMap.find(boneName) == boneInfoMap.end())
+            {
+                BoneInfo newBoneInfo;
+                newBoneInfo.id = boneCount;
+                newBoneInfo.offset = ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+                boneInfoMap[boneName] = newBoneInfo;
+                boneID = boneCount;
+                boneCount++;
+            }
+            else
+            {
+                boneID = boneInfoMap[boneName].id;
+            }
+            assert(boneID != -1);
+            auto weights = mesh->mBones[boneIndex]->mWeights;
+            int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+            for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+            {
+                int vertexId = weights[weightIndex].mVertexId;
+                float weight = weights[weightIndex].mWeight;
+                assert(vertexId <= vertices.size());
+                SetVertexBoneData(vertices[vertexId], boneID, weight);
+            }
+        }
+    }
+
+    void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+    {
+        for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+        {
+            if (vertex.m_BoneIDs[i] < 0)
+            {
+                vertex.m_Weights[i] = weight;
+                vertex.m_BoneIDs[i] = boneID;
+                break;
+            }
+        }
+    }
+
 };

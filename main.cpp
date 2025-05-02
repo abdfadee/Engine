@@ -1,4 +1,5 @@
 #include <iostream>
+#include<filesystem>
 #include "lib/renderer/initiliaze.h"
 #include "lib/renderer/renderer.h"
 #include "lib/renderer/view/PerspectiveCamera.h"
@@ -7,7 +8,10 @@
 #include "lib/renderer/light/PointLight.h"
 #include "lib/renderer/light/RectAreaLight.h"
 #include "lib/renderer/light/SpotLight.h"
+#include "lib/renderer/animation/Animator.h"
 
+
+using namespace std;
 
 
 int main() {
@@ -24,7 +28,7 @@ int main() {
 	Texture* metallic = Texture::T_2D( "assets/PBR/PavingStones/Metal049A_2K-JPG_Metalness.jpg");
 
 	Material* material = new Material(albedo,normal,displacment,NULL,roughness);
-	material->uvMultiplier = vec2(30.0f,30.0f);
+	material->uvMultiplier = vec2(300.0f,300.0f);
 	
 	
 
@@ -32,19 +36,28 @@ int main() {
 	Object3D* space = new Object3D{};
 
 	Mesh* floor = new Mesh{
-		new BoxGeometry{100,100,0.1},
+		new BoxGeometry{1000,1000,0.1},
 		material
 	};
 	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
 
 
-	Model* model = new Model("assets/models/h/adamHead.gltf", false);
-	model->scale(vec3(10));
-	model->translate(vec3(0, 3, 0));
-	space->add(model);
+	//Model* missile = new Model("assets/models/h/adamHead.gltf", false);
+	//missile->scale(vec3(1));
+	//missile->rotate(vec3(radians(-90.0f), 0, 0));
+	//missile->translate(vec3(0,4,0));
+	//space->add(missile);
 
-	
+	Model* fire = new Model("assets/models/k/scene.gltf", false);
+	fire->scale(vec3(1));
+	//fire->rotate(vec3(radians(-90.0f), 0, 0));
+	//fire->translate(vec3(5, 2, 0));
+	fire->translate(vec3(0, 0.5, 0));
+	space->add(fire);
+
+	Animator animator(fire->animations[1]);
+	animator.SetLooping(true);
 	
 	PointLight* l1 = new PointLight(
 		vec3(1.0f),
@@ -85,16 +98,17 @@ int main() {
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
-	camera->translate(vec3(0,5,5));
+	camera->translate(vec3(0,0.5,8));
 	//space->add(camera);
 
 
-	renderer.ibl->generateMaps(Texture::T_HDRI("assets/HDRI/overcast_soil_puresky_4k.hdr"));
+	renderer.ibl->generateMaps(Texture::T_HDRI("assets/HDRI/kloppenheim_06_puresky_4k.hdr"));
 
 
 	auto animationLoop = [&](float deltaTime) {
 		renderer.render(space,camera);
 
+		animator.UpdateAnimation(deltaTime);
 
 	};
 
