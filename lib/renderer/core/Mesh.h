@@ -77,7 +77,8 @@ public:
         if (materialize)
             material->bind(shader);
 
-        shader->setMat4("baseMatrix", baseMatrix);
+        shader->setMat4("finalBonesMatrices[" + std::to_string(MAX_BONES - 1) + "]", baseMatrix);
+
         shader->setMat4("model", worldMatrix);
         shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));
         draw();

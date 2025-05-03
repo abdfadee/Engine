@@ -14,7 +14,6 @@ uniform mat4 finalBonesMatrices[MAX_BONES];
 layout(std140) uniform View {
     mat4 viewProjectionMatrix;
 };
-uniform mat4 baseMatrix;
 uniform mat4 model;
 uniform mat3 normalMatrix;
 uniform vec2 uvMultiplier = vec2(1.0);
@@ -34,23 +33,21 @@ void main() {
     // Apply skinning only if bone influences exist
     mat4 boneTransform;
     if (boneIds[0] != -1) {
-        boneTransform = mat4(0.0);
-        for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
-            boneTransform += finalBonesMatrices[boneIds[i]] * weights[i];
+        boneTransform = weights[0] * finalBonesMatrices[boneIds[0]];
+        for (int i = 1; i < MAX_BONE_INFLUENCE; i++) {
+            if (boneIds[i] != -1)
+                boneTransform += weights[i] * finalBonesMatrices[boneIds[i]];
         }
     }
     else {
-        boneTransform = baseMatrix;
+        boneTransform = finalBonesMatrices[MAX_BONES - 1];      // Last Matrix Contains Node and Parent Nodes Transformation
     }
     mat3 normalTransform = transpose(inverse(mat3(boneTransform)));
+    
     skinnedPosition = boneTransform * vec4(aPosition, 1.0);
-    skinnedNormal = normalTransform * aNormal;
-    skinnedTangent = normalTransform * aTangent;
-    skinnedBitangent = normalTransform * aBitangent;
-
-    skinnedNormal = normalize(skinnedNormal);
-    skinnedTangent = normalize(skinnedTangent);
-    skinnedBitangent = normalize(skinnedBitangent);
+    skinnedNormal = normalize(normalTransform * aNormal);
+    skinnedTangent = normalize(normalTransform * aTangent);
+    skinnedBitangent = normalize(normalTransform * aBitangent);
 
     // Transform to world space
     vs_out.FragPos = vec3(model * vec4(skinnedPosition.xyz,1.0));

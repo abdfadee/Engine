@@ -1,8 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 
+#define MAX_BONES 100
 #define MAX_BONE_INFLUENCE 4
-
 
 struct Vertex {
     glm::vec3 mPosition;
