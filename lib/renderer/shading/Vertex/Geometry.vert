@@ -1,7 +1,7 @@
 #version 330 core
 
 const int MAX_BONES = 100;
-const int BONE_ARRAY_NUM = 2;
+const int BONE_ARRAY_NUM = 3;
 
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec3 aNormal;
@@ -9,7 +9,7 @@ layout(location = 2) in vec2 aTexCoords;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in ivec4 boneIds[BONE_ARRAY_NUM];
-layout(location = 9) in vec4 weights[BONE_ARRAY_NUM];
+layout(location = 8) in vec4 weights[BONE_ARRAY_NUM];
 
 uniform mat4 finalBonesMatrices[MAX_BONES];
 
@@ -21,7 +21,7 @@ uniform mat4 model;
 uniform mat4 fallbackMatrix;
 uniform mat3 normalMatrix;
 uniform vec2 uvMultiplier = vec2(1.0);
-uniform bool animate;
+uniform bool rigged;
 
 out FS_IN {
     vec3 FragPos;
@@ -33,28 +33,28 @@ void main() {
     mat4 finalModelMatrix = model;
     mat3 finalNormalMatrix = normalMatrix;
 
-    if (animate) {
-    mat4 skinMatrix = mat4(0.0);
+    if (rigged) {
+        mat4 skinMatrix = mat4(0.0);
 
-    // Accumulate bone transforms weighted by influence
-    for (int i = 0 ; i<BONE_ARRAY_NUM ;++i) {
-        for (int j = 0; j < 4; ++j) {
-        int boneIndex = boneIds[i][j];
-        float weight = weights[i][j];
+        // Accumulate bone transforms weighted by influence
+        for (int i = 0 ; i<BONE_ARRAY_NUM ;++i) {
+            for (int j = 0; j < 4; ++j) {
+                int boneIndex = boneIds[i][j];
+                float weight = weights[i][j];
 
-        if (boneIndex >= 0 && weight > 0.0) {
-            skinMatrix += weight * finalBonesMatrices[boneIndex];
+                if (boneIndex >= 0 && weight > 0.0) {
+                    skinMatrix += weight * finalBonesMatrices[boneIndex];
+                }
+            }
         }
-    }
-    }
 
-    // Fallback to base transform if no valid bone weights
-    if (skinMatrix == mat4(0.0)) {
-        skinMatrix = fallbackMatrix;
-    }
+        // Fallback to base transform if no valid bone weights
+        if (skinMatrix == mat4(0.0)) {
+            skinMatrix = fallbackMatrix;
+        }
 
-    finalModelMatrix = finalModelMatrix * skinMatrix;
-    finalNormalMatrix = finalNormalMatrix * transpose(inverse(mat3(skinMatrix)));
+        finalModelMatrix = finalModelMatrix * skinMatrix;
+        finalNormalMatrix = finalNormalMatrix * transpose(inverse(mat3(skinMatrix)));
     }
 
     // Pass world-space values to fragment shader

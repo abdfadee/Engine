@@ -17,18 +17,20 @@ public:
 	float m_Duration;
 	int m_TicksPerSecond;
 	std::vector<Bone> m_Bones;
-	std::map<std::string, BoneInfo> m_BoneInfoMap;
+	std::map<std::string, BoneInfo>& m_BoneInfoMap;
+	int& m_BoneCounter;
 	Node* m_RootNode;
 
 
 	Animation() = default;
 
 	Animation(const aiAnimation* animation , Node* root , std::map<string, BoneInfo>& boneInfoMap, int& boneCount)
+	: m_BoneInfoMap(boneInfoMap) , m_BoneCounter(boneCount)
 	{
 		m_Duration = animation->mDuration;
 		m_TicksPerSecond = animation->mTicksPerSecond;
 		m_RootNode = root;
-		ReadBones(animation, boneInfoMap, boneCount);
+		ReadBones(animation);
 	}
 
 	~Animation() {}
@@ -47,7 +49,7 @@ public:
 
 
 private:
-	void ReadBones(const aiAnimation* animation , std::map<string, BoneInfo>& boneInfoMap, int& boneCount)
+	void ReadBones(const aiAnimation* animation)
 	{
 		int size = animation->mNumChannels;
 
@@ -57,16 +59,14 @@ private:
 			auto channel = animation->mChannels[i];
 			std::string boneName = channel->mNodeName.data;
 
-			if (boneInfoMap.find(boneName) == boneInfoMap.end())
+			if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end())
 			{
-				boneInfoMap[boneName].id = boneCount;
-				boneCount++;
+				m_BoneInfoMap[boneName].id = m_BoneCounter;
+				m_BoneCounter++;
 			}
 			m_Bones.push_back(Bone(channel->mNodeName.data,
-				boneInfoMap[channel->mNodeName.data].id, channel));
+				m_BoneInfoMap[channel->mNodeName.data].id, channel));
 		}
-
-		m_BoneInfoMap = boneInfoMap;
 	}
 	
 };

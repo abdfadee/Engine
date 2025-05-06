@@ -21,15 +21,15 @@
 class Model : public Object3D {
 public:
     // data
-    std::string directory;
     Node* root;
+    std::string directory;
+    int m_BoneCounter = 0;
+    glm::mat4 m_GlobalInverseTransform;
+
     std::map<std::string, Texture*> texturesLoaded;
     std::map<string, BoneInfo> m_BoneInfoMap;
-    int m_BoneCounter = 0;
-    vector<glm::mat4> Transforms;
-    glm::mat4 m_GlobalInverseTransform;
     vector<Animation*> animations;
-    bool animate = false;
+    
 
 
 
@@ -41,13 +41,15 @@ public:
     void render(Shader* shader, mat4 parentMatrix = mat4(1.0f), bool materialize = false, bool geometeryPass = false) {
         Object3D::render(shader, parentMatrix,materialize,geometeryPass);
 
-        for (int i = 0; i < Transforms.size(); ++i)
-            shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", Transforms[i]);
-        shader->setBool("animate",animate);
+        for (auto pair : m_BoneInfoMap)
+            shader->setMat4("finalBonesMatrices[" + std::to_string(pair.second.id) + "]", pair.second.finalTransformMatrix);
+        
+        bool rigged = (m_BoneCounter > 0);
+        shader->setBool("rigged",rigged);
 
-        root->render(shader, worldMatrix , materialize, geometeryPass , animate);
+        root->render(shader, worldMatrix , materialize, geometeryPass,rigged);
 
-        shader->setBool("animate", false);
+        shader->setBool("rigged", false);
     }
 
 
@@ -71,6 +73,11 @@ public:
         return NULL;
     }
 
+    void GetBoneTransforms()
+    {
+        glm::mat4 identity = mat4(1.0f);
+        ReadNodeHierarchy(root, identity);
+    }
 
 private:
     void loadModel(std::string path , bool flipTexturesVertically) {
@@ -85,36 +92,38 @@ private:
         directory = path.substr(0, path.find_last_of('/'));
 
         // process ASSIMP's root node recursively
-        glm::mat4 identity = mat4(1);
-        root = processNode(scene->mRootNode, scene, identity);
-
         m_GlobalInverseTransform = glm::inverse(AssimpGLMHelpers::ConvertMatrixToGLMFormat(scene->mRootNode->mTransformation));
+        glm::mat4 identitiy = mat4(1);
+        root = processNode(scene->mRootNode, scene,identitiy);
+        GetBoneTransforms();
+
 
         for (unsigned int i = 0; i < scene->mNumAnimations; ++i)
             animations.push_back(new Animation(scene->mAnimations[i],root, m_BoneInfoMap , m_BoneCounter));
 
         stbi_set_flip_vertically_on_load(true);
+
+        cout << m_BoneInfoMap.size() << endl;
     }
 
 
     // recursively load all meshes in the node tree
-    Node* processNode(aiNode* node, const aiScene* scene , glm::mat4& parentMatrix)
+    Node* processNode(aiNode* node, const aiScene* scene , glm::mat4 &globalTransformation)
     {
         Node* newNode = new Node();
 
         newNode->name = node->mName.C_Str();
 
         newNode->transformation = AssimpGLMHelpers::ConvertMatrixToGLMFormat(node->mTransformation);
-        newNode->globalTransformation = parentMatrix * newNode->transformation;
+        newNode->globalTransformation = globalTransformation * newNode->transformation;
 
         for (unsigned int i = 0; i < node->mNumMeshes; i++)
             newNode->meshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
-            newNode->children.push_back(processNode(node->mChildren[i], scene , newNode->globalTransformation));
+            newNode->children.push_back(processNode(node->mChildren[i], scene, newNode->globalTransformation));
 
-        cout << newNode->name << "   ";
-        cout << newNode->children.size() << endl;
+        cout << newNode->name << endl;
 
         return newNode;
     }
@@ -295,31 +304,28 @@ private:
                 return;
             }
         }
-        //assert("More Bones Required");
+        assert("More Bones Required");
     }
 
 
     void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
     {
-        auto& boneInfoMap = m_BoneInfoMap;
-        int& boneCount = m_BoneCounter;
-
         for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
         {
             int boneID = -1;
             std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
-            if (boneInfoMap.find(boneName) == boneInfoMap.end())
+            if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end())
             {
                 BoneInfo newBoneInfo;
-                newBoneInfo.id = boneCount;
+                newBoneInfo.id = m_BoneCounter;
                 newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
-                boneInfoMap[boneName] = newBoneInfo;
-                boneID = boneCount;
-                boneCount++;
+                m_BoneInfoMap[boneName] = newBoneInfo;
+                boneID = m_BoneCounter;
+                m_BoneCounter++;
             }
             else
             {
-                boneID = boneInfoMap[boneName].id;
+                boneID = m_BoneInfoMap[boneName].id;
             }
             assert(boneID != -1);
             auto weights = mesh->mBones[boneIndex]->mWeights;
@@ -334,4 +340,24 @@ private:
             }
         }
     }
+
+
+    void ReadNodeHierarchy(const Node* pNode, const glm::mat4& ParentTransform)
+    {
+        string NodeName(pNode->name);
+
+        glm::mat4 NodeTransformation(pNode->transformation);
+        glm::mat4 GlobalTransformation = ParentTransform * NodeTransformation;
+
+        if (m_BoneInfoMap.find(NodeName) != m_BoneInfoMap.end()) {
+            BoneInfo& boneInfo = m_BoneInfoMap[NodeName];
+            uint BoneIndex = boneInfo.id;
+            boneInfo.finalTransformMatrix = GlobalTransformation * boneInfo.offset;
+        }
+
+        for (uint i = 0; i < pNode->children.size(); i++) {
+            ReadNodeHierarchy(pNode->children[i], GlobalTransformation);
+        }
+    }
+
 };

@@ -57,16 +57,16 @@ public:
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, mBitangent));
 
-        // For all 4 bone ID/weight attribute sets (matches shader layout)
-        for (int i = 0; i < 4; i++) {
-            // Bone IDs (locations 5-8)
+        // For all 2 bone ID/weight attribute sets (matches shader layout)
+        for (int i = 0; i < BONE_ARRAY_NUM; i++) {
+            // Bone IDs (locations 5-6)
             glEnableVertexAttribArray(5 + i);
             glVertexAttribIPointer(5 + i, 4, GL_INT, sizeof(Vertex),
                 (void*)(offsetof(Vertex, m_BoneIDs) + i * 4 * sizeof(int)));
 
-            // Weights (locations 9-12)
-            glEnableVertexAttribArray(9 + i);
-            glVertexAttribPointer(9 + i, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+            // Weights (locations 7-8)
+            glEnableVertexAttribArray(5 + BONE_ARRAY_NUM + i);
+            glVertexAttribPointer(5 + BONE_ARRAY_NUM + i, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 (void*)(offsetof(Vertex, m_Weights) + i * 4 * sizeof(float)));
         }
 

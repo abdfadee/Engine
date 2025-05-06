@@ -14,9 +14,9 @@ public:
 	std::vector<Node*> children;
     vector<Mesh*> meshes;
 
-    void render(Shader* shader, glm::mat4 parentMatrix = glm::mat4(1.0f), bool materialize = false, bool geometeryPass = false , bool animate = false) {
-        if (!animate)
-            parentMatrix *= transformation;
+    void render(Shader* shader, glm::mat4 parentMatrix = glm::mat4(1.0f), bool materialize = false, bool geometeryPass = false , bool rigged = false) {   
+        if (!rigged)
+            parentMatrix = parentMatrix * transformation;
         else
             shader->setMat4("fallbackMatrix", globalTransformation);
 
@@ -24,6 +24,6 @@ public:
             meshes[i]->render(shader, parentMatrix, materialize, geometeryPass);
 
         for (unsigned int i = 0; i < children.size(); i++)
-            children[i]->render(shader, parentMatrix, materialize, geometeryPass,animate);
+            children[i]->render(shader, parentMatrix, materialize, geometeryPass,rigged);
     }
 };

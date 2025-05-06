@@ -2,7 +2,8 @@
 #include <glm/glm.hpp>
 
 #define MAX_BONES 100
-#define MAX_BONE_INFLUENCE 16
+#define MAX_BONE_INFLUENCE 12
+#define BONE_ARRAY_NUM 3
 
 struct Vertex {
     glm::vec3 mPosition;

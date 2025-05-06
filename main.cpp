@@ -49,12 +49,17 @@ int main() {
 	space->add(model);
 
 
-	Node* node = model->getNode("Object_6");
-	Animator animator = Animator(model->animations[0]);
+	//Node* node = model->getNode("Object_6");
+	//Animator animator = Animator(model->animations[0]);
 	
-	
-
-
+	/*
+	BoneInfo& cannon = model->m_BoneInfoMap["Bone.005_05"];
+	BoneInfo& wheel1 = model->m_BoneInfoMap["Bone.001_01"];
+	BoneInfo& wheel2 = model->m_BoneInfoMap["Bone.002_02"];
+	BoneInfo& wheel3 = model->m_BoneInfoMap["Bone.003_03"];
+	BoneInfo& wheel4 = model->m_BoneInfoMap["Bone.004_04"];
+	BoneInfo* wheels[4] = { &wheel1 , &wheel2 , &wheel3 , &wheel4 };
+	*/
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
@@ -66,7 +71,13 @@ int main() {
 
 
 	auto animationLoop = [&](float deltaTime) {
-		animator.UpdateAnimation(deltaTime,model);
+		//animator.UpdateAnimation(deltaTime);
+
+		/*
+		for (int i = 0 ; i<4 ; ++i)
+			wheels[i]->offset = glm::rotate(mat4(1), radians(1.0f), vec3(1, 0, 0)) * wheels[i]->offset;
+		model->GetBoneTransforms();
+		*/
 
 		renderer.render(space,camera);
 	};
