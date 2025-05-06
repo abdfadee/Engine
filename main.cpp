@@ -9,7 +9,6 @@
 #include "lib/renderer/light/RectAreaLight.h"
 #include "lib/renderer/light/SpotLight.h"
 #include "lib/renderer/model/Model.h"
-#include "lib/renderer/animation/Animation.h"
 #include "lib/renderer/animation/Animator.h"
 
 
@@ -23,6 +22,8 @@ int main() {
 
 
 
+	Object3D* space = new Object3D{};
+
 	Texture* albedo = Texture::T_2D("assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Color.jpg" ,true);
 	Texture* normal = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_NormalGL.jpg");
 	Texture* displacment = Texture::T_2D( "assets/PBR/PavingStones115/PavingStones115B_1K-JPG_Displacement.jpg");
@@ -31,11 +32,6 @@ int main() {
 
 	Material* material = new Material(albedo,normal,displacment,NULL,roughness);
 	material->uvMultiplier = vec2(300.0f,300.0f);
-	
-	
-
-	 
-	Object3D* space = new Object3D{};
 
 	Mesh* floor = new Mesh{
 		new BoxGeometry{1000,1000,0.1},
@@ -45,59 +41,17 @@ int main() {
 	space->add(floor);
 
 
-	//Model* missile = new Model("assets/models/h/adamHead.gltf", false);
-	//missile->scale(vec3(1));
-	//missile->rotate(vec3(radians(-90.0f), 0, 0));
-	//missile->translate(vec3(0,4,0));
-	//space->add(missile);
 
-	Model* fire = new Model("assets/models/k/scene.gltf", false);
-	fire->scale(vec3(1));
-	fire->rotate(vec3(radians(-90.0f), 0, 0));
-	//fire->translate(vec3(5, 2, 0));
-	fire->translate(vec3(0, 0.5, 0));
-	space->add(fire);
-
-	//cout << fire->m_BoneInfoMap.size() << endl;
+	Model* model = new Model("assets/models/ca/scene.gltf", false);
+	model->scale(vec3(0.001));
+	//model->rotate(vec3(radians(90.0f), 0, 0));
+	model->translate(vec3(0, 0.4, 0));
+	space->add(model);
 
 
-	Animation animation("assets/models/k/scene.gltf", fire);
-	Animator animator(&animation);
-
+	Node* node = model->getNode("Object_6");
+	Animator animator = Animator(model->animations[0]);
 	
-	PointLight* l1 = new PointLight(
-		vec3(1.0f),
-		100.0f,
-		15.0f
-	);
-	l1->translate(vec3(0,10,0));
-	//space->add(l1);
-	
-	
-	RectAreaLight* l2 = new RectAreaLight(
-		vec3(1.0f),
-		1.0f,
-		50,
-		50,
-		20,
-		true
-	);
-	l2->translate(vec3(0, 10, 0));
-	l2->rotate(vec3(radians(-90.0f), 0, 0));
-	//space->add(l2);
-	
-	
-	SpotLight* l3 = new SpotLight(
-		vec3(1.0f),
-		50.0f,
-		radians(35.0f),
-		radians(15.0f),
-		15.0f
-	);
-	l3->translate(vec3(0, 10, 0));
-	l3->rotate(vec3(radians(-90.0f),0,0));
-	//l3->rotate(vec3(0, 0, radians(-30.0f)));
-	//space->add(l3);
 	
 
 
@@ -112,13 +66,7 @@ int main() {
 
 
 	auto animationLoop = [&](float deltaTime) {
-		
-		animator.UpdateAnimation(deltaTime);
-		auto transforms = animator.GetFinalBoneMatrices();
-		for (int i = 0; i < transforms.size(); ++i)
-			transforms[i] = fire->m_GlobalInverseTransform * transforms[i];
-		fire->Transforms = transforms;
-		
+		animator.UpdateAnimation(deltaTime,model);
 
 		renderer.render(space,camera);
 	};

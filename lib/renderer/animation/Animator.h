@@ -5,11 +5,19 @@
 #include <vector>
 #include "Animation.h"
 #include "Bone.h"
+#include "../model/Model.h"
 
 
 
 class Animator
 {
+private:
+	std::vector<glm::mat4> m_FinalBoneMatrices;
+	Animation* m_CurrentAnimation;
+	float m_CurrentTime;
+	float m_DeltaTime;
+
+
 public:
 	Animator(Animation* animation)
 	{
@@ -22,15 +30,18 @@ public:
 			m_FinalBoneMatrices.push_back(glm::mat4(1.0f));
 	}
 
-	void UpdateAnimation(float dt)
+	void UpdateAnimation(float dt , Model* model)
 	{
 		m_DeltaTime = dt;
 		if (m_CurrentAnimation)
 		{
-			m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt;
-			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->GetDuration());
-			CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
+			m_CurrentTime += m_CurrentAnimation->m_TicksPerSecond * dt;
+			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->m_Duration);
+			CalculateBoneTransform(m_CurrentAnimation->m_RootNode, glm::mat4(1.0f));
 		}
+
+		model->Transforms = GetFinalBoneMatrices();
+		model->animate = true;
 	}
 
 	void PlayAnimation(Animation* pAnimation)
@@ -39,7 +50,7 @@ public:
 		m_CurrentTime = 0.0f;
 	}
 
-	void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
+	void CalculateBoneTransform(const Node* node, glm::mat4 parentTransform)
 	{
 		std::string nodeName = node->name;
 		glm::mat4 nodeTransform = node->transformation;
@@ -54,7 +65,7 @@ public:
 
 		glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
-		auto boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
+		auto boneInfoMap = m_CurrentAnimation->m_BoneInfoMap;
 		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
 		{
 			int index = boneInfoMap[nodeName].id;
@@ -62,19 +73,13 @@ public:
 			m_FinalBoneMatrices[index] = globalTransformation * offset;
 		}
 
-		for (int i = 0; i < node->childrenCount; i++)
-			CalculateBoneTransform(&node->children[i], globalTransformation);
+		for (int i = 0; i < node->children.size(); i++)
+			CalculateBoneTransform(node->children[i], globalTransformation);
 	}
 
 	std::vector<glm::mat4> GetFinalBoneMatrices()
 	{
 		return m_FinalBoneMatrices;
 	}
-
-private:
-	std::vector<glm::mat4> m_FinalBoneMatrices;
-	Animation* m_CurrentAnimation;
-	float m_CurrentTime;
-	float m_DeltaTime;
 
 };

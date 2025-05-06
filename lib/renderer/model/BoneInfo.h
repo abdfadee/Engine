@@ -9,6 +9,4 @@ struct BoneInfo
 
 	/*offset matrix transforms vertex from model space to bone space*/
 	glm::mat4 offset;
-
-	glm::mat4 finalTransformation;
 };

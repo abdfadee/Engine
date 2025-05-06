@@ -18,8 +18,6 @@
 class Mesh : public Object3D {
 public:
     unsigned int VAO, VBO, EBO;
-    mat4 baseMatrix = mat4(1.0f);
-    std::string name;
     Material* material;
     Geometry* geometry;
 
@@ -59,14 +57,20 @@ public:
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, mBitangent));
 
-        // ids
-        glEnableVertexAttribArray(5);
-        glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
+        // For all 4 bone ID/weight attribute sets (matches shader layout)
+        for (int i = 0; i < 4; i++) {
+            // Bone IDs (locations 5-8)
+            glEnableVertexAttribArray(5 + i);
+            glVertexAttribIPointer(5 + i, 4, GL_INT, sizeof(Vertex),
+                (void*)(offsetof(Vertex, m_BoneIDs) + i * 4 * sizeof(int)));
 
-        // weights
-        glEnableVertexAttribArray(6);
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
+            // Weights (locations 9-12)
+            glEnableVertexAttribArray(9 + i);
+            glVertexAttribPointer(9 + i, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                (void*)(offsetof(Vertex, m_Weights) + i * 4 * sizeof(float)));
+        }
 
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
 
@@ -76,8 +80,6 @@ public:
 
         if (materialize)
             material->bind(shader);
-
-        shader->setMat4("finalBonesMatrices[" + std::to_string(MAX_BONES - 1) + "]", baseMatrix);
 
         shader->setMat4("model", worldMatrix);
         shader->setMat3("normalMatrix", transpose(inverse(mat3(worldMatrix))));

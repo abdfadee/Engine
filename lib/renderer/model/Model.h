@@ -13,6 +13,8 @@
 #include "../shading/Shader.h"
 #include "../utility/Helpers.h"
 #include "BoneInfo.h"
+#include "Node.h"
+#include "../animation/Animation.h"
 
 
 
@@ -20,12 +22,15 @@ class Model : public Object3D {
 public:
     // data
     std::string directory;
-    vector<Mesh> meshes;
+    Node* root;
     std::map<std::string, Texture*> texturesLoaded;
     std::map<string, BoneInfo> m_BoneInfoMap;
     int m_BoneCounter = 0;
     vector<glm::mat4> Transforms;
-    glm::mat4 m_GlobalInverseTransform = glm::mat4(1);
+    glm::mat4 m_GlobalInverseTransform;
+    vector<Animation*> animations;
+    bool animate = false;
+
 
 
     Model(std::string path , bool flipTexturesVertically = true) {
@@ -38,17 +43,40 @@ public:
 
         for (int i = 0; i < Transforms.size(); ++i)
             shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", Transforms[i]);
+        shader->setBool("animate",animate);
 
-        for (unsigned int i = 0; i < meshes.size(); i++)
-            meshes[i].render(shader,worldMatrix,materialize,geometeryPass);
+        root->render(shader, worldMatrix , materialize, geometeryPass , animate);
+
+        shader->setBool("animate", false);
     }
 
 
+    Node* getNode(string name) {
+        Node* result = findByName(root, name);
+        if (result == NULL)
+            cout << "node not found!" << endl;
+        return result;
+    }
 
+    Node* findByName(Node* node, string name) {
+        if (node->name == name)
+            return node;
+
+        for (auto n : node->children) {
+            Node* result = findByName(n, name);
+            if (result != NULL)
+                return result;
+        }
+
+        return NULL;
+    }
+
+
+private:
     void loadModel(std::string path , bool flipTexturesVertically) {
         Assimp::Importer importer;
         stbi_set_flip_vertically_on_load(flipTexturesVertically);
-        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
+        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs  | aiProcess_CalcTangentSpace);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             std::cout << "Error loading model: " << importer.GetErrorString() << std::endl;
@@ -56,44 +84,43 @@ public:
 
         directory = path.substr(0, path.find_last_of('/'));
 
-        m_GlobalInverseTransform = AssimpGLMHelpers::ConvertMatrixToGLMFormat(scene->mRootNode->mTransformation);
-        m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
-
         // process ASSIMP's root node recursively
-        processNode(scene->mRootNode, scene, m_GlobalInverseTransform);
+        glm::mat4 identity = mat4(1);
+        root = processNode(scene->mRootNode, scene, identity);
 
-        GetBoneTransforms(scene,Transforms);
+        m_GlobalInverseTransform = glm::inverse(AssimpGLMHelpers::ConvertMatrixToGLMFormat(scene->mRootNode->mTransformation));
+
+        for (unsigned int i = 0; i < scene->mNumAnimations; ++i)
+            animations.push_back(new Animation(scene->mAnimations[i],root, m_BoneInfoMap , m_BoneCounter));
 
         stbi_set_flip_vertically_on_load(true);
     }
 
 
     // recursively load all meshes in the node tree
-    void processNode(aiNode* node, const aiScene* scene , glm::mat4 parentNodeMatrix)
+    Node* processNode(aiNode* node, const aiScene* scene , glm::mat4& parentMatrix)
     {
-        mat4 transform = parentNodeMatrix * AssimpGLMHelpers::ConvertMatrixToGLMFormat(node->mTransformation);
-        // process each mesh located at the current node
-        for (unsigned int i = 0; i < node->mNumMeshes; i++)
-        {
-            // the node object only contains indices to index the actual objects in the scene. 
-            // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
-            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            Mesh m = processMesh(mesh, scene);
-            m.baseMatrix = transform;
-            meshes.push_back(m);
-        }
-        // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
-        for (unsigned int i = 0; i < node->mNumChildren; i++)
-        {
-            processNode(node->mChildren[i], scene, transform);
-        }
+        Node* newNode = new Node();
 
+        newNode->name = node->mName.C_Str();
+
+        newNode->transformation = AssimpGLMHelpers::ConvertMatrixToGLMFormat(node->mTransformation);
+        newNode->globalTransformation = parentMatrix * newNode->transformation;
+
+        for (unsigned int i = 0; i < node->mNumMeshes; i++)
+            newNode->meshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));
+
+        for (unsigned int i = 0; i < node->mNumChildren; i++)
+            newNode->children.push_back(processNode(node->mChildren[i], scene , newNode->globalTransformation));
+
+        cout << newNode->name << "   ";
+        cout << newNode->children.size() << endl;
+
+        return newNode;
     }
 
-
-
 	// convert assimp mesh to our own mesh class
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
+    Mesh* processMesh(aiMesh* mesh, const aiScene* scene) {
         Geometry* geometery = new Geometry();
 
         // vertices
@@ -129,16 +156,16 @@ public:
 
             // tangents
             glm::vec3 tangent;
-            tangent.x = mesh->mTangents[0].x;
-            tangent.y = mesh->mTangents[0].y;
-            tangent.z = mesh->mTangents[0].z;
+            tangent.x = mesh->mTangents[i].x;
+            tangent.y = mesh->mTangents[i].y;
+            tangent.z = mesh->mTangents[i].z;
             vertex.mTangent = tangent;
 
             // bitangents
             glm::vec3 bitangent;
-            bitangent.x = mesh->mBitangents[0].x;
-            bitangent.y = mesh->mBitangents[0].y;
-            bitangent.z = mesh->mBitangents[0].z;
+            bitangent.x = mesh->mBitangents[i].x;
+            bitangent.y = mesh->mBitangents[i].y;
+            bitangent.z = mesh->mBitangents[i].z;
             vertex.mBitangent = bitangent;
 
             geometery->vertices.push_back(vertex);
@@ -216,6 +243,7 @@ public:
         }
 
         ExtractBoneWeightForVertices(geometery->vertices, mesh, scene);
+
         /*
         for (int i = 0; i < geometery->vertices.size(); ++i) {
             cout << endl;
@@ -227,7 +255,32 @@ public:
             cout << endl;
         }
         */
-        return Mesh(geometery , material);
+        return new Mesh(geometery , material);
+    }
+
+    // loads the first texture of given type
+    Texture* loadMaterialTexture(aiMaterial* material, aiTextureType type) {
+        aiString path;
+        material->GetTexture(type, 0, &path);
+
+        // check if we already have it loaded and use that if so
+        auto iterator = texturesLoaded.find(std::string(path.C_Str()));
+        if (iterator != texturesLoaded.end()) {
+            return iterator->second;
+        }
+
+        std::cout << "Process material: " << path.C_Str() << std::endl;
+
+        std::string fullPath = directory + '/' + path.C_Str();
+        bool gamma = false;
+        if (type == aiTextureType_DIFFUSE)
+            gamma = true;
+        Texture* texture = Texture::T_2D(fullPath, gamma);
+
+        // cache it for future lookups
+        texturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
+
+        return texture;
     }
 
 
@@ -281,66 +334,4 @@ public:
             }
         }
     }
-
-
-    // loads the first texture of given type
-    Texture* loadMaterialTexture(aiMaterial* material, aiTextureType type) {
-        aiString path;
-        material->GetTexture(type, 0, &path);
-
-        // check if we already have it loaded and use that if so
-        auto iterator = texturesLoaded.find(std::string(path.C_Str()));
-        if (iterator != texturesLoaded.end()) {
-            return iterator->second;
-        }
-
-        std::cout << "Process material: " << path.C_Str() << std::endl;
-
-        std::string fullPath = directory + '/' + path.C_Str();
-        bool gamma = false;
-        if (type == aiTextureType_DIFFUSE)
-            gamma = true;
-        Texture* texture = Texture::T_2D(fullPath, gamma);
-
-        // cache it for future lookups
-        texturesLoaded.insert(std::pair<std::string, Texture*>(path.C_Str(), texture));
-
-        return texture;
-    }
-
-
-    void GetBoneTransforms(const aiScene* pScene, vector<glm::mat4>& Transforms)
-    {
-        Transforms.resize(m_BoneInfoMap.size());
-
-        ReadNodeHierarchy(pScene->mRootNode, glm::mat4(1.0f));
-
-        // Iterate over values using range-based for loop
-        uint i = 0;
-        for (const auto& pair : m_BoneInfoMap) {
-            Transforms[i] = pair.second.finalTransformation;
-            ++i;
-        }
-    }
-
-    void ReadNodeHierarchy(const aiNode* pNode, const glm::mat4& ParentTransform)
-    {
-        string NodeName(pNode->mName.data);
-
-        mat4 NodeTransformation(AssimpGLMHelpers::ConvertMatrixToGLMFormat(pNode->mTransformation));
-
-        mat4 GlobalTransformation = ParentTransform * NodeTransformation;
-
-        if (m_BoneInfoMap.find(NodeName) != m_BoneInfoMap.end()) {
-            uint BoneIndex = m_BoneInfoMap[NodeName].id;
-            m_BoneInfoMap[NodeName].finalTransformation = m_GlobalInverseTransform * GlobalTransformation * m_BoneInfoMap[NodeName].offset;
-        }
-
-        for (uint i = 0; i < pNode->mNumChildren; i++) {
-            ReadNodeHierarchy(pNode->mChildren[i], GlobalTransformation);
-        }
-    }
-
-    auto& GetBoneInfoMap() { return m_BoneInfoMap; }
-    int& GetBoneCount() { return m_BoneCounter; }
 };
