@@ -42,24 +42,26 @@ int main() {
 
 
 
-	Model* model = new Model("assets/models/ca/scene.gltf", false);
-	model->scale(vec3(0.001));
-	//model->rotate(vec3(radians(90.0f), 0, 0));
-	model->translate(vec3(0, 0.4, 0));
-	space->add(model);
+	Model* cannon = new Model("assets/models/cannon/scene.gltf", false);
+	cannon->scale(vec3(0.0015));
+	cannon->translate(vec3(0, 0.55, 0));
+	space->add(cannon);
 
 
-	//Node* node = model->getNode("Object_6");
-	//Animator animator = Animator(model->animations[0]);
+	Model* shell = new Model("assets/models/cannonball/scene.gltf", false);
+	shell->scale(vec3(4));
+	shell->translate(vec3(2, 2, 0));
+	space->add(shell);
 	
-	/*
-	BoneInfo& cannon = model->m_BoneInfoMap["Bone.005_05"];
-	BoneInfo& wheel1 = model->m_BoneInfoMap["Bone.001_01"];
-	BoneInfo& wheel2 = model->m_BoneInfoMap["Bone.002_02"];
-	BoneInfo& wheel3 = model->m_BoneInfoMap["Bone.003_03"];
-	BoneInfo& wheel4 = model->m_BoneInfoMap["Bone.004_04"];
+	
+	BoneInfo& barrel = cannon->m_BoneInfoMap["Bone.005_05"];
+	BoneInfo& wheel1 = cannon->m_BoneInfoMap["Bone.001_01"];
+	BoneInfo& wheel2 = cannon->m_BoneInfoMap["Bone.002_02"];
+	BoneInfo& wheel3 = cannon->m_BoneInfoMap["Bone.003_03"];
+	BoneInfo& wheel4 = cannon->m_BoneInfoMap["Bone.004_04"];
 	BoneInfo* wheels[4] = { &wheel1 , &wheel2 , &wheel3 , &wheel4 };
-	*/
+	
+
 
 	PerspectiveCamera* camera = new PerspectiveCamera{};
 	camera->attachControls();
@@ -70,14 +72,18 @@ int main() {
 	renderer.ibl->generateMaps(Texture::T_HDRI("assets/HDRI/kloppenheim_06_puresky_4k.hdr"));
 
 
-	auto animationLoop = [&](float deltaTime) {
-		//animator.UpdateAnimation(deltaTime);
 
-		/*
+	auto animationLoop = [&](float deltaTime) {
+
+		
 		for (int i = 0 ; i<4 ; ++i)
 			wheels[i]->offset = glm::rotate(mat4(1), radians(1.0f), vec3(1, 0, 0)) * wheels[i]->offset;
-		model->GetBoneTransforms();
-		*/
+		
+		barrel.offset = glm::rotate(mat4(1), radians(1.0f), vec3(1, 0, 0)) * barrel.offset;
+
+		cannon->GetBoneTransforms();
+		
+
 
 		renderer.render(space,camera);
 	};

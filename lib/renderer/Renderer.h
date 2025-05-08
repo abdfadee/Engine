@@ -224,7 +224,7 @@ public:
 			deltaTime = (currentFrameTime - lastFrameTime);
 			lastFrameTime = currentFrameTime;
 
-			Controls::processInput(deltaTime);
+			Controls::processInput(deltaTime * 10);
 
 			animationLoop(deltaTime);
 
