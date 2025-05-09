@@ -20,12 +20,13 @@ public:
 	mat4 view, projection;
 	vec3 cameraFront , cameraUp;
 	double pre_xpos, pre_ypos;
-	float sensetivity;
+	float sensitivity;
+	bool firstMouse = true;
 
 
-	Camera(float sensetivity = 0.1f) :
+	Camera(float sensitivity = 0.1f) :
 		cameraBuffer(UBO(0, sizeof(mat4))),
-		sensetivity(sensetivity) {
+		sensitivity(sensitivity) {
 		view = glm::lookAt(positionVector, positionVector + cameraFront, cameraUp);
 	}
 
@@ -42,29 +43,34 @@ public:
 	}
 
 	void look(double xpos, double ypos) {
-		static bool firstTime = true;
-		if (firstTime) {
+		if (firstMouse) {
 			pre_xpos = xpos;
 			pre_ypos = ypos;
-			firstTime = false;
+			firstMouse = false;
 		}
 
-		double xoffset = (xpos - pre_xpos) * sensetivity;
-		double yoffset = (ypos - pre_ypos) * sensetivity;
-
-		rotate(vec3(radians(-yoffset), 0, 0));
-		rotate(vec3(0,radians(-xoffset), 0));
-
-		constexpr float maxR = radians(89.0f);
-		constexpr float minR = radians(-89.0f);
-
-		if (rotationVector.x > maxR)
-			setRotation(vec3(maxR,rotationVector.y,rotationVector.z));
-		else if (rotationVector.x < minR)
-			setRotation(vec3(minR, rotationVector.y, rotationVector.z));
-
+		float xoffset = static_cast<float>(xpos - pre_xpos) * sensitivity;
+		float yoffset = static_cast<float>(ypos - pre_ypos) * sensitivity;
 		pre_xpos = xpos;
 		pre_ypos = ypos;
+
+		// Get current orientation
+		quat currentOrientation = orientation;
+
+		// Create rotation quaternions for yaw (Y-axis) and pitch (X-axis)
+		quat yaw = angleAxis(radians(-xoffset), vec3(0.0f, 1.0f, 0.0f));
+		quat pitch = angleAxis(radians(-yoffset), vec3(1.0f, 0.0f, 0.0f));
+
+		// Apply yaw first, then pitch to avoid roll
+		quat newOrientation = normalize(yaw * currentOrientation * pitch);
+
+		// Clamp pitch to prevent over-rotation
+		//vec3 euler = eulerAngles(newOrientation);
+		//const float maxPitch = radians(89.0f);
+		//euler.x = glm::clamp(euler.x, -maxPitch, maxPitch);
+
+		// Set new rotation without roll
+		setRotation(newOrientation);
 	}
 
 	virtual void attachControls() {

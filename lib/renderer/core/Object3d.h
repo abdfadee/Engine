@@ -4,6 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include "../shading/Shader.h"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 
 using namespace std;
 using namespace glm;
@@ -18,6 +21,7 @@ public:
     vec3 scaleVector = vec3(1.0f);
     vec3 positionVector = vec3(0.0f);
     vec3 rotationVector = vec3(0.0f);
+    quat orientation = quat(1.0f, 0.0f, 0.0f, 0.0f);
     bool matrixNeedsUpdate = true;
 
 
@@ -54,6 +58,13 @@ public:
 
     void setRotation(vec3 eulerAngles) {
         rotationVector = eulerAngles;
+        orientation = quat(eulerAngles);
+        matrixNeedsUpdate = true;
+    }
+
+    void setRotation(quat q) {
+        orientation = normalize(q);
+        rotationVector = eulerAngles(orientation);
         matrixNeedsUpdate = true;
     }
 
@@ -69,6 +80,15 @@ public:
 
     void rotate(vec3 eulerAngles) {
         rotationVector += eulerAngles;
+        orientation = quat(eulerAngles) * orientation;
+        orientation = normalize(orientation);
+        rotationVector = glm::eulerAngles(orientation);
+        matrixNeedsUpdate = true;
+    }
+
+    void rotate(quat q) {
+        orientation = normalize(q * orientation);
+        rotationVector = glm::eulerAngles(orientation);
         matrixNeedsUpdate = true;
     }
 
@@ -76,9 +96,7 @@ public:
         if (!matrixNeedsUpdate) return;
         localMatrix = mat4(1.0f);
         localMatrix = glm::translate(localMatrix, positionVector);
-        localMatrix = glm::rotate(localMatrix, rotationVector.z, vec3(0, 0, 1));
-        localMatrix = glm::rotate(localMatrix, rotationVector.y, vec3(0, 1, 0));
-        localMatrix = glm::rotate(localMatrix, rotationVector.x, vec3(1, 0, 0));
+        localMatrix *= mat4_cast(orientation);
         localMatrix = glm::scale(localMatrix, scaleVector);
         matrixNeedsUpdate = false;
     }
@@ -97,7 +115,15 @@ public:
     }
 
     vec3 getWorldPosition() {
+        mat4 worldMatrix = getWorldMatrix();
         return vec3(worldMatrix * vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    }
+
+    quat  getWorldOrientation() {
+        if (parent) {
+            return parent->getWorldOrientation() * orientation;
+        }
+        return orientation;
     }
 
     virtual void render(Shader* shader, mat4 parentMatrix = mat4(1.0f),bool materialize = false , bool geometeryPass = false) {
