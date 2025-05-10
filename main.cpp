@@ -43,10 +43,9 @@ int main() {
 	material->uvMultiplier = vec2(30.0f,30.0f);
 
 	Mesh* floor = new Mesh{
-		new BoxGeometry{100,100,0.1},
+		new BoxGeometry{100,0.1,100},
 		material
 	};
-	floor->rotate(vec3(radians(90.0f),0,0));
 	space->add(floor);
 
 	/*
@@ -63,12 +62,19 @@ int main() {
 	BoneInfo* wheels[4] = { &wheel1 , &wheel2 , &wheel3 , &wheel4 };
 	*/
 
-	Model* shell = new Model("assets/models/cannonball/scene.gltf", false);
-	shell->scale(vec3(4));
-	shell->translate(vec3(0, 10, 0));
+	Model* shellModel = new Model("assets/models/cannonball/scene.gltf", false);
+	shellModel->scale(vec3(4));
+
+
+	Object3D* shell = new Object3D();
+	shell->add(shellModel);
+	shell->translate(vec3(0.1, 10, 0));
 	space->add(shell);
 	
-	
+	Object3D* shell2 = new Object3D();
+	shell2->add(shellModel);
+	shell2->translate(vec3(0, 1, 0));
+	space->add(shell2);
 	
 	
 
@@ -80,22 +86,36 @@ int main() {
 	/* Physics */
 	PhysicsEngine physics;
 
+
 	auto pshell = new RigidBody(
 		shell->getWorldPosition(),
 		shell->getWorldOrientation(),
-		1.0f
+		1.0f,0.5f,0.4f,
+		ColliderType::Sphere,
+		vec3(0.115f),
+		0.12f
 	);
-	pshell->SetBoxCollider(vec3(0.25));
 	physics.AddBody(pshell);
 	
+
+	auto pshell2 = new RigidBody(
+		shell2->getWorldPosition(),
+		shell2->getWorldOrientation(),
+		1.0f, 0.5f, 0.4f,
+		ColliderType::Sphere,
+		vec3(0.115f),
+		0.12f
+	);
+	physics.AddBody(pshell2);
 
 
 	auto pfloor = new RigidBody(
 		floor->getWorldPosition(),
 		floor->getWorldOrientation(),
-		0.0f
+		0.0f, 0.5f, 0.4f,
+		ColliderType::AABB,
+		vec3(50.0f,0.075f,50.0f)
 	);
-	pfloor->SetBoxCollider(vec3(50.0f,50.0f,0.1f));
 	physics.AddBody(pfloor);
 
 
@@ -112,6 +132,8 @@ int main() {
 		shell->setPosition(pshell->position);
 		shell->setRotation(pshell->orientation);
 
+		shell2->setPosition(pshell2->position);
+		shell2->setRotation(pshell2->orientation);
 
 		/*
 		for (int i = 0 ; i<4 ; ++i)
