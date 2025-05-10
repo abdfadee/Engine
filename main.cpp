@@ -88,8 +88,7 @@ int main() {
 
 
 	auto pshell = new RigidBody(
-		shell->getWorldPosition(),
-		shell->getWorldOrientation(),
+		shell,
 		1.0f,0.5f,0.4f
 	);
 	pshell->setCollider(new AABBCollider(vec3(0.128f)));
@@ -97,8 +96,7 @@ int main() {
 
 
 	auto pshell2 = new RigidBody(
-		shell2->getWorldPosition(),
-		shell2->getWorldOrientation(),
+		shell2,
 		1.0f, 0.2f, 0.4f
 	);
 	pshell2->setCollider(new AABBCollider(vec3(0.126f)));
@@ -106,8 +104,7 @@ int main() {
 	
 
 	auto pfloor = new RigidBody(
-		floor->getWorldPosition(),
-		floor->getWorldOrientation(),
+		floor,
 		0.0f, 0.2f, 0.4f
 	);
 	pfloor->setCollider(new AABBCollider(vec3(50.0f,0.06f,50.0f)));
@@ -119,16 +116,6 @@ int main() {
 		//pshell->AddForce(vec3(5, 0, 0));
 
 		physics.Update(dt/3);
-
-
-		floor->setPosition(pfloor->position);
-		floor->setRotation(pfloor->orientation);
-
-		shell->setPosition(pshell->position);
-		shell->setRotation(pshell->orientation);
-
-		shell2->setPosition(pshell2->position);
-		shell2->setRotation(pshell2->orientation);
 
 		/*
 		for (int i = 0 ; i<4 ; ++i)

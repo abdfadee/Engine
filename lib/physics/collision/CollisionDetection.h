@@ -12,6 +12,8 @@
 
 class CollisionDetection {
 public:
+    std::vector<Contact> contacts;
+
     void detectCollisions(std::vector<RigidBody*>& bodies) {
         contacts.clear();
 
@@ -30,8 +32,7 @@ public:
         }
     }
 
-
-    void handleCollisions(float dt) {
+    void handleCollisions() {
         for (auto& contact : contacts) {
             RigidBody* bodyA = contact.bodyA;
             RigidBody* bodyB = contact.bodyB;
@@ -67,14 +68,6 @@ public:
             bodyB->position -= correction * bodyB->inverseMass;
         }
     }
-
-
-
-private:
-	std::vector<Contact> contacts;
-
-    
-
 
     void AABBxAABBCollision(RigidBody* bodyA, RigidBody* bodyB) {
         if (bodyA->collider->type != ColliderType::AABB ||
@@ -122,6 +115,4 @@ private:
             contacts.push_back(contact);
         }
     }
-
-
 };

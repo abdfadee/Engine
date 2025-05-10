@@ -27,7 +27,7 @@ public:
 
         // Collisions
         collisionDetection.detectCollisions(bodies);
-        collisionDetection.handleCollisions(deltaTime);
+        collisionDetection.handleCollisions();
 
         // Integrate
         for (auto body : bodies) body->Integrate(deltaTime);

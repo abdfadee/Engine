@@ -8,6 +8,8 @@
 
 class RigidBody {
 public:
+    Object3D* representation;
+
     glm::vec3 position;
     glm::quat orientation;
 
@@ -24,12 +26,9 @@ public:
 
     Collider* collider = nullptr;
 
-    RigidBody(glm::vec3 pos = glm::vec3(0.0f),
-        glm::quat rot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-        float m = 1.0f,
-        float rest = 0.5f,
-        float frict = 0.4f) :
-        position(pos), orientation(rot),
+    RigidBody(Object3D* o , float m = 1.0f,float rest = 0.5f,float frict = 0.4f) :
+        representation(o),
+        position(o->getWorldPosition()), orientation(o->getWorldOrientation()),
         mass(m), restitution(rest), friction(frict) {
         if (mass != 0.0f) inverseMass = 1.0f / mass;
     }
@@ -78,6 +77,10 @@ public:
         }
 
         collider->update(position, orientation);
+
+        representation->setPosition(position);
+        representation->setRotation(orientation);
+
         ClearForces();
     }
 };
