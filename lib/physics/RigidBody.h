@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <memory>
+#include "collision/Collider.h"
 
 
 
@@ -21,6 +22,8 @@ public:
     glm::vec3 forceAccum = glm::vec3(0.0f);
     glm::vec3 torqueAccum = glm::vec3(0.0f);
 
+    Collider* collider = nullptr;
+
     RigidBody(glm::vec3 pos = glm::vec3(0.0f),
         glm::quat rot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
         float m = 1.0f,
@@ -31,6 +34,9 @@ public:
         if (mass != 0.0f) inverseMass = 1.0f / mass;
     }
 
+    void setCollider(Collider* collider) {
+        this->collider = collider;
+    }
 
     void AddForce(const glm::vec3& force) {
         if (mass != 0.0f) {
