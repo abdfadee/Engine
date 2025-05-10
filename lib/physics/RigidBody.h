@@ -36,6 +36,7 @@ public:
 
     void setCollider(Collider* collider) {
         this->collider = collider;
+        collider->update(position,orientation);
     }
 
     void AddForce(const glm::vec3& force) {
@@ -76,6 +77,7 @@ public:
             orientation = glm::normalize(orientation);
         }
 
+        collider->update(position, orientation);
         ClearForces();
     }
 };

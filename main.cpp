@@ -90,32 +90,27 @@ int main() {
 	auto pshell = new RigidBody(
 		shell->getWorldPosition(),
 		shell->getWorldOrientation(),
-		1.0f,0.5f,0.4f,
-		ColliderType::Sphere,
-		vec3(0.115f),
-		0.12f
+		1.0f,0.5f,0.4f
 	);
+	pshell->setCollider(new AABBCollider(vec3(0.128f)));
 	physics.AddBody(pshell);
-	
+
 
 	auto pshell2 = new RigidBody(
 		shell2->getWorldPosition(),
 		shell2->getWorldOrientation(),
-		1.0f, 0.5f, 0.4f,
-		ColliderType::Sphere,
-		vec3(0.115f),
-		0.12f
+		1.0f, 0.2f, 0.4f
 	);
+	pshell2->setCollider(new AABBCollider(vec3(0.126f)));
 	physics.AddBody(pshell2);
-
+	
 
 	auto pfloor = new RigidBody(
 		floor->getWorldPosition(),
 		floor->getWorldOrientation(),
-		0.0f, 0.5f, 0.4f,
-		ColliderType::AABB,
-		vec3(50.0f,0.075f,50.0f)
+		0.0f, 0.2f, 0.4f
 	);
+	pfloor->setCollider(new AABBCollider(vec3(50.0f,0.06f,50.0f)));
 	physics.AddBody(pfloor);
 
 
