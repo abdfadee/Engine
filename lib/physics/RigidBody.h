@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <memory>
-#include "collision/Collider.h"
+#include "collision/AABBCollider.h"
 
 
 
@@ -24,7 +24,7 @@ public:
     glm::vec3 forceAccum = glm::vec3(0.0f);
     glm::vec3 torqueAccum = glm::vec3(0.0f);
 
-    Collider* collider = nullptr;
+    AABBCollider collider = AABBCollider(vec3(0));
 
     RigidBody(Object3D* o , float m = 1.0f,float rest = 0.5f,float frict = 0.4f) :
         representation(o),
@@ -33,9 +33,9 @@ public:
         if (mass != 0.0f) inverseMass = 1.0f / mass;
     }
 
-    void setCollider(Collider* collider) {
-        this->collider = collider;
-        collider->update(position,orientation);
+    void setAABBCollider(glm::vec3 halfExtents) {
+        this->collider = AABBCollider(halfExtents);
+        collider.update(position);
     }
 
     void AddForce(const glm::vec3& force) {
@@ -76,7 +76,7 @@ public:
             orientation = glm::normalize(orientation);
         }
 
-        collider->update(position, orientation);
+        collider.update(position);
 
         representation->setPosition(position);
         representation->setRotation(orientation);

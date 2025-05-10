@@ -3,10 +3,7 @@
 #include <glm/glm.hpp>
 #include <algorithm>
 #include "Contact.h"
-#include "Collider.h"
-#include "colliders/SphereCollider.h"
-#include "colliders/AABBCollider.h"
-#include "colliders/PlaneCollider.h"
+#include "AABBCollider.h"
 
 
 
@@ -20,14 +17,7 @@ public:
         // Broad phase (naive approach - for small numbers of bodies)
         for (size_t i = 0; i < bodies.size(); ++i) {
             for (size_t j = i + 1; j < bodies.size(); ++j) {
-                if (!bodies[i]->collider || !bodies[j]->collider) continue;
-
-                // Check if AABBs overlap first (if both are AABBs)
-                if (bodies[i]->collider->type == ColliderType::AABB &&
-                    bodies[j]->collider->type == ColliderType::AABB) {
-                    AABBxAABBCollision(bodies[i], bodies[j]);
-                }
-                // Add other collision type checks here...
+                AABBxAABBCollision(bodies[i], bodies[j]);
             }
         }
     }
@@ -70,16 +60,13 @@ public:
     }
 
     void AABBxAABBCollision(RigidBody* bodyA, RigidBody* bodyB) {
-        if (bodyA->collider->type != ColliderType::AABB ||
-            bodyB->collider->type != ColliderType::AABB) return;
+        AABBCollider a = bodyA->collider;
+        AABBCollider b = bodyB->collider;
 
-        AABBCollider* a = static_cast<AABBCollider*>(bodyA->collider);
-        AABBCollider* b = static_cast<AABBCollider*>(bodyB->collider);
-
-        glm::vec3 minA = a->getMinExtent();
-        glm::vec3 maxA = a->getMaxExtent();
-        glm::vec3 minB = b->getMinExtent();
-        glm::vec3 maxB = b->getMaxExtent();
+        glm::vec3 minA = a.getMinExtent();
+        glm::vec3 maxA = a.getMaxExtent();
+        glm::vec3 minB = b.getMinExtent();
+        glm::vec3 maxB = b.getMaxExtent();
 
         // Check for overlap on all axes
         if (maxA.x > minB.x && minA.x < maxB.x &&

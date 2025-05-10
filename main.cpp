@@ -43,7 +43,7 @@ int main() {
 	material->uvMultiplier = vec2(30.0f,30.0f);
 
 	Mesh* floor = new Mesh{
-		new BoxGeometry{100,0.1,100},
+		new BoxGeometry{100,0.4,100},
 		material
 	};
 	space->add(floor);
@@ -89,31 +89,31 @@ int main() {
 
 	auto pshell = new RigidBody(
 		shell,
-		1.0f,0.5f,0.4f
+		5.0f,0.5f,0.4f
 	);
-	pshell->setCollider(new AABBCollider(vec3(0.128f)));
+	pshell->setAABBCollider(vec3(0.128f));
 	physics.AddBody(pshell);
 
 
 	auto pshell2 = new RigidBody(
 		shell2,
-		1.0f, 0.2f, 0.4f
+		1.0f, 0.5f, 0.4f
 	);
-	pshell2->setCollider(new AABBCollider(vec3(0.126f)));
+	pshell2->setAABBCollider(vec3(0.126f));
 	physics.AddBody(pshell2);
 	
 
 	auto pfloor = new RigidBody(
 		floor,
-		0.0f, 0.2f, 0.4f
+		0.0f, 0.5f, 0.4f
 	);
-	pfloor->setCollider(new AABBCollider(vec3(50.0f,0.06f,50.0f)));
+	pfloor->setAABBCollider(vec3(50.0f,0.21f,50.0f));
 	physics.AddBody(pfloor);
 
 
 
 	auto animationLoop = [&](float dt) {
-		//pshell->AddForce(vec3(5, 0, 0));
+		pshell->AddForce(vec3(5, 0, 0));
 
 		physics.Update(dt/3);
 
